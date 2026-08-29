@@ -7,139 +7,234 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --accent-color: #22c55e;
-      --text-color: #f8fafc;
-      --subtext-color: #94a3b8;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --accent-color: #10b981;
+      --accent-hover: #059669;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+      --warning-border: rgba(245, 158, 11, 0.4);
     }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
     body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
-      padding: 15px 15px 80px 15px;
+      padding: 20px 15px 90px 15px;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 16px;
-      padding: 20px;
-      width: 100%;
-      max-width: 350px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      text-align: center;
-      margin-bottom: 15px;
-      border: 1px solid rgba(255,255,255,0.05);
-      box-sizing: border-box;
+
+    .user-badge {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-sub);
+      margin-bottom: 20px;
     }
-    .balance-title { font-size: 14px; color: var(--subtext-color); }
-    .balance-amount { font-size: 32px; font-weight: bold; color: var(--accent-color); margin: 10px 0; }
-    .btn-group { display: flex; gap: 10px; width: 100%; max-width: 350px; margin-bottom: 15px; }
+
+    .tab-content {
+      display: none;
+      width: 100%;
+      max-width: 380px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 22px;
+      text-align: center;
+      margin-bottom: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .balance-title {
+      font-size: 13px;
+      color: var(--text-sub);
+      letter-spacing: 0.5px;
+    }
+
+    .balance-amount {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--accent-color);
+      margin: 12px 0;
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 380px;
+      margin-bottom: 16px;
+    }
+
     .btn {
       flex: 1;
-      padding: 12px;
+      padding: 14px;
       border: none;
-      border-radius: 12px;
-      font-weight: bold;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 15px;
       cursor: pointer;
-      transition: transform 0.1s;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background-color: var(--accent-color); color: #000; }
-    .btn-secondary { background-color: var(--card-bg); color: var(--text-color); border: 1px solid rgba(255,255,255,0.1); }
-    .user-info { font-size: 15px; color: var(--subtext-color); margin-bottom: 15px; font-weight: 500; }
-    
-    .tab-content { display: none; width: 100%; max-width: 350px; }
-    .tab-content.active { display: block; }
-    
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #000;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .notice-box {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: #fbbf24;
+      padding: 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      text-align: right;
+    }
+
+    /* منوی شناور پایینی */
     .bottom-nav {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: #1e293b;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 30px);
+      max-width: 380px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
       display: flex;
       justify-content: space-around;
       padding: 10px 0;
-      border-top: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
+
     .nav-item {
-      color: var(--subtext-color);
+      color: var(--text-sub);
       text-decoration: none;
-      font-size: 12px;
+      font-size: 11px;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 4px;
       cursor: pointer;
+      transition: color 0.2s;
+      flex: 1;
     }
-    .nav-item.active { color: var(--accent-color); font-weight: bold; }
-    .nav-icon { font-size: 18px; }
 
+    .nav-item.active {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+    }
+
+    /* مودال واریز */
     .modal {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
       align-items: center;
       justify-content: center;
       z-index: 100;
       padding: 20px;
     }
+
     .modal-content {
-      background: var(--card-bg);
-      padding: 20px;
-      border-radius: 16px;
-      max-width: 320px;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      border-radius: 24px;
+      max-width: 340px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
+
     .wallet-address {
       background: #0f172a;
-      padding: 12px;
-      border-radius: 8px;
+      padding: 14px;
+      border-radius: 12px;
       font-size: 12px;
       word-break: break-all;
-      margin: 15px 0;
+      margin: 16px 0;
       color: #38bdf8;
-      border: 1px dashed rgba(255,255,255,0.2);
+      border: 1px dashed rgba(255, 255, 255, 0.2);
       font-family: monospace;
-    }
-    .notice-box {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      color: #fbbf24;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 12px;
-      margin-bottom: 12px;
     }
   </style>
 </head>
 <body>
 
-  <div class="user-info" id="userInfo">خوش آمدید!</div>
+  <div class="user-badge" id="userInfo">✨ خوش آمدید</div>
 
   <!-- تب اصلی (کیف پول) -->
   <div id="tab-wallet" class="tab-content active">
     <div class="card">
-      <div class="balance-title">موجودی کل (USDT / EUR)</div>
+      <div class="balance-title">موجودی حساب (USDT / EUR)</div>
       <div class="balance-amount" id="balance">0.00 €</div>
     </div>
 
     <div class="btn-group">
-      <button class="btn btn-primary" onclick="openDepositModal()">واریز</button>
-      <button class="btn btn-secondary" onclick="alert('بخش برداشت بزودی فعال می‌شود')">برداشت</button>
+      <button class="btn btn-primary" onclick="openDepositModal()">📥 واریز</button>
+      <button class="btn btn-secondary" onclick="alert('بخش برداشت به زودی فعال می‌شود')">📤 برداشت</button>
     </div>
 
     <div class="card">
-      <h3>🎁 پاداش روزانه</h3>
+      <h3 style="margin-top: 0;">🎁 پاداش روزانه</h3>
       <div class="notice-box">
-        🔒 پاداش روزانه فقط برای حساب‌هایی که حداقل <b>۲۰۰ یورو / تتر</b> موجودی دارند فعال است.
+        🔒 دریافت پاداش روزانه نیاز به داشتن حداقل <b>۲۰ یورو / تتر</b> موجودی فعال در کیف پول دارد.
       </div>
       <button class="btn btn-primary" style="width: 100%;" onclick="claimDaily()">دریافت پاداش امروز</button>
     </div>
@@ -148,21 +243,21 @@
   <!-- تب زیرمجموعه‌گیری -->
   <div id="tab-referral" class="tab-content">
     <div class="card">
-      <h3>👥 دعوت از دوستان</h3>
-      <p style="font-size: 13px; color: var(--subtext-color);">با دعوت هر دوست، پاداش ویژه بگیرید!</p>
-      <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; font-size: 12px; word-break: break-all; margin: 10px 0;" id="refLink">
-        در حال ساخت لینک اختصاصی...
+      <h3 style="margin-top: 0;">👥 دعوت از دوستان</h3>
+      <p style="font-size: 13px; color: var(--text-sub);">دوستان خود را دعوت کنید و با هربار شارژ حساب آن‌ها پاداش بگیرید!</p>
+      <div class="wallet-address" id="refLink">
+        در حال دریافت لینک...
       </div>
-      <button class="btn btn-primary" style="width: 100%;" onclick="copyRef()">کپی کردن لینک دعوت</button>
+      <button class="btn btn-primary" style="width: 100%;" onclick="copyRef()">کپی کردن لینک اختصاصی</button>
     </div>
   </div>
 
   <!-- تب گردونه شانس -->
   <div id="tab-spin" class="tab-content">
     <div class="card">
-      <h3>🎰 گردونه شانس</h3>
-      <p style="font-size: 13px; color: var(--subtext-color);">شانس خود را امتحان کنید!</p>
-      <div style="font-size: 50px; margin: 15px 0;">🎰</div>
+      <h3 style="margin-top: 0;">🎰 گردونه شانس</h3>
+      <p style="font-size: 13px; color: var(--text-sub);">شانس خود را برای دریافت جوایز نقدی امتحان کنید!</p>
+      <div style="font-size: 60px; margin: 20px 0; animation: bounce 2s infinite;">🎰</div>
       <button class="btn btn-primary" style="width: 100%;" onclick="spinWheel()">چرخاندن گردونه</button>
     </div>
   </div>
@@ -186,13 +281,13 @@
   <!-- مودال واریز -->
   <div class="modal" id="depositModal">
     <div class="modal-content">
-      <h3>📥 واریز وجه</h3>
+      <h3 style="margin-top:0;">📥 شارژ کیف پول</h3>
       <p style="font-size: 12px; color: #f59e0b; margin-top: 5px;">شبکه: BEP20 (BNB Smart Chain)</p>
       
       <div class="wallet-address" id="walletAddr">0xDae2e4e81A39C4E68faFaFd8b6aa05192f7A123</div>
       
-      <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="copyWallet()">کپی آدرس ولت</button>
-      <button class="btn btn-secondary" style="width: 100%;" onclick="closeDepositModal()">انصراف</button>
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="copyWallet()">کپی آدرس ولت</button>
+      <button class="btn btn-secondary" style="width: 100%;" onclick="closeDepositModal()">بستن</button>
     </div>
   </div>
 
@@ -204,7 +299,7 @@
     let userId = '123456';
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
       const user = tg.initDataUnsafe.user;
-      document.getElementById('userInfo').innerText = خوش آمدی ${user.first_name}!;
+      document.getElementById('userInfo').innerText = 👤 ${user.first_name};
       userId = user.id;
     }
 
@@ -219,9 +314,8 @@
     }
 
     function claimDaily() {
-      // شرط حداقل موجودی ۲۰ یورو
       if (currentBalance < 20.00) {
-        alert('⚠️ برای دریافت پاداش روزانه، باید حداقل ۲۰ یورو در کیف پول خود داشته باشید.\n\nلطفاً ابتدا از بخش واریز اقدام کنید.');
+        alert('⚠️ برای دریافت پاداش روزانه، باید حداقل ۲۰ یورو در کیف پول خود داشته باشید.\n\nلطفاً ابتدا حساب خود را شارژ کنید.');
         return;
       }
       
