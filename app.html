@@ -10,17 +10,13 @@
       --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
       --card-bg: rgba(30, 41, 59, 0.7);
       --accent-color: #10b981;
-      --accent-hover: #059669;
       --text-main: #f8fafc;
       --text-sub: #94a3b8;
       --warning-bg: rgba(245, 158, 11, 0.15);
       --warning-border: rgba(245, 158, 11, 0.4);
     }
 
-    * {
-      box-sizing: border-box;
-      user-select: none;
-    }
+    * { box-sizing: border-box; user-select: none; }
 
     body {
       background: var(--bg-gradient);
@@ -41,26 +37,12 @@
       padding: 8px 16px;
       border-radius: 20px;
       font-size: 14px;
-      font-weight: 500;
       color: var(--text-sub);
       margin-bottom: 20px;
     }
 
-    .tab-content {
-      display: none;
-      width: 100%;
-      max-width: 380px;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .tab-content { display: none; width: 100%; max-width: 380px; }
+    .tab-content.active { display: block; }
 
     .card {
       background: var(--card-bg);
@@ -73,12 +55,7 @@
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
     }
 
-    .balance-title {
-      font-size: 13px;
-      color: var(--text-sub);
-      letter-spacing: 0.5px;
-    }
-
+    .balance-title { font-size: 13px; color: var(--text-sub); }
     .balance-amount {
       font-size: 38px;
       font-weight: 800;
@@ -87,13 +64,7 @@
       text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
     }
 
-    .btn-group {
-      display: flex;
-      gap: 12px;
-      width: 100%;
-      max-width: 380px;
-      margin-bottom: 16px;
-    }
+    .btn-group { display: flex; gap: 12px; width: 100%; max-width: 380px; margin-bottom: 16px; }
 
     .btn {
       flex: 1;
@@ -104,26 +75,26 @@
       font-size: 15px;
       cursor: pointer;
       transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
     }
-
-    .btn:active {
-      transform: scale(0.96);
-    }
+    .btn:active { transform: scale(0.96); }
 
     .btn-primary {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: #000;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
     }
 
     .btn-secondary {
       background: rgba(255, 255, 255, 0.08);
       color: var(--text-main);
       border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* استایل دکمه قفل‌شده */
+    .btn-locked {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: #64748b !important;
+      cursor: not-allowed;
+      box-shadow: none !important;
     }
 
     .notice-box {
@@ -135,10 +106,8 @@
       font-size: 12px;
       line-height: 1.6;
       margin-bottom: 16px;
-      text-align: right;
     }
 
-    /* منوی شناور پایینی */
     .bottom-nav {
       position: fixed;
       bottom: 15px;
@@ -153,32 +122,21 @@
       display: flex;
       justify-content: space-around;
       padding: 10px 0;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .nav-item {
       color: var(--text-sub);
-      text-decoration: none;
       font-size: 11px;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 4px;
       cursor: pointer;
-      transition: color 0.2s;
       flex: 1;
     }
+    .nav-item.active { color: var(--accent-color); font-weight: bold; }
+    .nav-icon { font-size: 20px; }
 
-    .nav-item.active {
-      color: var(--accent-color);
-      font-weight: bold;
-    }
-
-    .nav-icon {
-      font-size: 20px;
-    }
-
-    /* مودال واریز */
     .modal {
       display: none;
       position: fixed;
@@ -199,7 +157,6 @@
       max-width: 340px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
 
     .wallet-address {
@@ -219,35 +176,34 @@
 
   <div class="user-badge" id="userInfo">✨ خوش آمدید</div>
 
-  <!-- تب اصلی (کیف پول) -->
+  <!-- تب کیف پول -->
   <div id="tab-wallet" class="tab-content active">
     <div class="card">
-      <div class="balance-title">موجودی حساب (USDT / EUR)</div>
+      <div class="balance-title">موجودی کل (USDT / EUR)</div>
       <div class="balance-amount" id="balance">0.00 €</div>
     </div>
 
+    <!-- دکمه‌های فعال واریز و برداشت -->
     <div class="btn-group">
       <button class="btn btn-primary" onclick="openDepositModal()">📥 واریز</button>
-      <button class="btn btn-secondary" onclick="alert('بخش برداشت به زودی فعال می‌شود')">📤 برداشت</button>
+      <button class="btn btn-secondary" onclick="openWithdrawModal()">📤 برداشت</button>
     </div>
 
     <div class="card">
       <h3 style="margin-top: 0;">🎁 پاداش روزانه</h3>
-      <div class="notice-box">
-        🔒 دریافت پاداش روزانه نیاز به داشتن حداقل <b>۲۰ یورو / تتر</b> موجودی فعال در کیف پول دارد.
+      <div class="notice-box" id="dailyNotice">
+        🔒 پاداش روزانه فقط برای حساب‌هایی که حداقل <b>۲۰ یورو</b> موجودی دارند فعال است.
       </div>
-      <button class="btn btn-primary" style="width: 100%;" onclick="claimDaily()">دریافت پاداش امروز</button>
+      <button class="btn btn-primary btn-locked" id="claimBtn" style="width: 100%;" onclick="claimDaily()">🔒 دریافت پاداش امروز</button>
     </div>
   </div>
 
-  <!-- تب زیرمجموعه‌گیری -->
+  <!-- تب دعوت (همیشه فعال) -->
   <div id="tab-referral" class="tab-content">
     <div class="card">
       <h3 style="margin-top: 0;">👥 دعوت از دوستان</h3>
       <p style="font-size: 13px; color: var(--text-sub);">دوستان خود را دعوت کنید و با هربار شارژ حساب آن‌ها پاداش بگیرید!</p>
-      <div class="wallet-address" id="refLink">
-        در حال دریافت لینک...
-      </div>
+      <div class="wallet-address" id="refLink">در حال دریافت لینک...</div>
       <button class="btn btn-primary" style="width: 100%;" onclick="copyRef()">کپی کردن لینک اختصاصی</button>
     </div>
   </div>
@@ -257,8 +213,11 @@
     <div class="card">
       <h3 style="margin-top: 0;">🎰 گردونه شانس</h3>
       <p style="font-size: 13px; color: var(--text-sub);">شانس خود را برای دریافت جوایز نقدی امتحان کنید!</p>
-      <div style="font-size: 60px; margin: 20px 0; animation: bounce 2s infinite;">🎰</div>
-      <button class="btn btn-primary" style="width: 100%;" onclick="spinWheel()">چرخاندن گردونه</button>
+      <div style="font-size: 60px; margin: 20px 0;">🎰</div>
+      <div class="notice-box" id="spinNotice">
+        🔒 گردونه شانس فقط برای حساب‌های با حداقل <b>۲۰ یورو</b> موجودی فعال است.
+      </div>
+      <button class="btn btn-primary btn-locked" id="spinBtn" style="width: 100%;" onclick="spinWheel()">🔒 چرخاندن گردونه</button>
     </div>
   </div>
 
@@ -283,11 +242,20 @@
     <div class="modal-content">
       <h3 style="margin-top:0;">📥 شارژ کیف پول</h3>
       <p style="font-size: 12px; color: #f59e0b; margin-top: 5px;">شبکه: BEP20 (BNB Smart Chain)</p>
-      
       <div class="wallet-address" id="walletAddr">0xDae2e4e81A39C4E68faFaFd8b6aa05192f7A123</div>
-      
       <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="copyWallet()">کپی آدرس ولت</button>
-      <button class="btn btn-secondary" style="width: 100%;" onclick="closeDepositModal()">بستن</button>
+      <button class="btn btn-secondary" style="width: 100%;" onclick="closeModal('depositModal')">بستن</button>
+    </div>
+  </div>
+
+  <!-- مودال برداشت -->
+  <div class="modal" id="withdrawModal">
+    <div class="modal-content">
+      <h3 style="margin-top:0;">📤 برداشت وجه</h3>
+      <p style="font-size: 12px; color: var(--text-sub);">آدرس ولت BEP20 خود را برای تسویه وارد کنید:</p>
+      <input type="text" placeholder="0x..." style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: #fff; margin: 15px 0; box-sizing: border-box;" id="withdrawAddr">
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="submitWithdraw()">ثبت درخواست برداشت</button>
+      <button class="btn btn-secondary" style="width: 100%;" onclick="closeModal('withdrawModal')">انصراف</button>
     </div>
   </div>
 
@@ -311,17 +279,51 @@
     function updateBalanceDisplay() {
       document.getElementById('balance').innerText = currentBalance.toFixed(2) + ' €';
       localStorage.setItem('balance', currentBalance);
+
+      // بررسی وضعیت قفل بودن پاداش و گردونه (حداقل ۲۰ یورو)
+      const claimBtn = document.getElementById('claimBtn');
+      const spinBtn = document.getElementById('spinBtn');
+      const dailyNotice = document.getElementById('dailyNotice');
+      const spinNotice = document.getElementById('spinNotice');
+
+      if (currentBalance >= 20.00) {
+        claimBtn.classList.remove('btn-locked');
+        claimBtn.innerText = '🎁 دریافت پاداش امروز';
+        dailyNotice.style.display = 'none';
+
+        spinBtn.classList.remove('btn-locked');
+        spinBtn.innerText = '🎰 چرخاندن گردونه';
+        spinNotice.style.display = 'none';
+      } else {
+        claimBtn.classList.add('btn-locked');
+        claimBtn.innerText = '🔒 دریافت پاداش امروز';
+        dailyNotice.style.display = 'block';
+
+        spinBtn.classList.add('btn-locked');
+        spinBtn.innerText = '🔒 چرخاندن گردونه';
+        spinNotice.style.display = 'block';
+      }
     }
 
     function claimDaily() {
       if (currentBalance < 20.00) {
-        alert('⚠️ برای دریافت پاداش روزانه، باید حداقل ۲۰ یورو در کیف پول خود داشته باشید.\n\nلطفاً ابتدا حساب خود را شارژ کنید.');
+        alert('⚠️ برای دریافت پاداش، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
         return;
       }
-      
       currentBalance += 1.00;
       updateBalanceDisplay();
-      alert('🎉 ۱ یورو پاداش روزانه با موفقیت به حساب شما اضافه شد!');
+      alert('🎉 ۱ یورو پاداش روزانه اضافه شد!');
+    }
+
+    function spinWheel() {
+      if (currentBalance < 20.00) {
+        alert('⚠️ برای چرخاندن گردونه، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
+        return;
+      }
+      const reward = parseFloat((Math.random() * 5).toFixed(2));
+      currentBalance += reward;
+      updateBalanceDisplay();
+      alert(🎉 شما ${reward} یورو برنده شدید!);
     }
 
     function switchTab(tabName, element) {
@@ -335,30 +337,27 @@
     function copyRef() {
       const link = document.getElementById('refLink').innerText;
       navigator.clipboard.writeText(link);
-      alert('لینک دعوت شما کپی شد!');
+      alert('لینک دعوت کپی شد!');
     }
 
-    function spinWheel() {
-      if (currentBalance < 20.00) {
-        alert('⚠️ برای استفاده از گردونه شانس، باید حداقل ۲۰ یورو در کیف پول داشته باشید.');
-        return;
-      }
-      const reward = parseFloat((Math.random() * 5).toFixed(2));
-      currentBalance += reward;
-      updateBalanceDisplay();
-      alert(تبریک! شما ${reward} یورو برنده شدید!);
-    }
+    function openDepositModal() { document.getElementById('depositModal').style.display = 'flex'; }
+    function openWithdrawModal() { document.getElementById('withdrawModal').style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    function openDepositModal() {
-      document.getElementById('depositModal').style.display = 'flex';
-    }
-    function closeDepositModal() {
-      document.getElementById('depositModal').style.display = 'none';
-    }
     function copyWallet() {
       const addr = document.getElementById('walletAddr').innerText;
       navigator.clipboard.writeText(addr);
       alert('آدرس کیف پول کپی شد!');
+    }
+
+    function submitWithdraw() {
+      const addr = document.getElementById('withdrawAddr').value;
+      if (!addr) {
+        alert('لطفاً آدرس ولت را وارد کنید.');
+        return;
+      }
+      alert('درخواست برداشت ثبت شد و پس از بررسی واریز خواهد شد.');
+      closeModal('withdrawModal');
     }
   </script>
 </body>
