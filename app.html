@@ -186,9 +186,9 @@
     </div>
 
     <div class="card">
-      <h3 style="margin-top: 0;">🎁 پاداش روزانه</h3>
-      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 15px;">هر ۲۴ ساعت یک‌بار ۱ USDT رایگان دریافت کنید!</p>
-      <button class="btn btn-primary" id="claimBtn" style="width: 100%;" onclick="claimDaily()">🎁 دریافت پاداش امروز</button>
+      <h3 style="margin-top: 0;">🎁 دریافت پاداش تتر</h3>
+      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 15px;">برای دریافت ۱ USDT هدیه روی دکمه زیر کلیک کنید!</p>
+      <button class="btn btn-primary" id="claimBtn" style="width: 100%;" onclick="claimDaily()">🎁 دریافت ۱ USDT هدیه</button>
     </div>
   </div>
 
@@ -317,7 +317,6 @@
       const withdrawNotice = document.getElementById('withdrawNotice');
 
       const today = new Date().toDateString();
-      const lastClaim = localStorage.getItem('lastClaimDate');
       const lastSpin = localStorage.getItem('lastSpinDate');
       const lastGame = localStorage.getItem('lastGameDate');
 
@@ -351,16 +350,10 @@
         withdrawNotice.innerText = '✅ شرط ۵ روز سپری شده است. می‌توانید تا ۸۰٪ سرمایه خود را برداشت کنید.';
       }
 
-      // پاداش روزانه کاملاً آزاد است (فقط چک ۲۴ ساعت روزانه)
-      if (lastClaim === today) {
-        claimBtn.classList.add('btn-locked');
-        claimBtn.classList.remove('btn-primary');
-        claimBtn.innerText = '✅ پاداش امروز دریافت شد';
-      } else {
-        claimBtn.classList.remove('btn-locked');
-        claimBtn.classList.add('btn-primary');
-        claimBtn.innerText = '🎁 دریافت پاداش امروز';
-      }
+      // دکمه پاداش همیشه فعال است
+      claimBtn.classList.remove('btn-locked');
+      claimBtn.classList.add('btn-primary');
+      claimBtn.innerText = '🎁 دریافت ۱ USDT هدیه';
 
       // گردونه
       if (window.currentBalance < 20.00) {
@@ -393,19 +386,11 @@
       }
     }
 
+    // تابع پاداش نامحدود بدون قفل ۲۴ ساعته
     function claimDaily() {
-      const today = new Date().toDateString();
-      const lastClaim = localStorage.getItem('lastClaimDate');
-
-      if (lastClaim === today) {
-        alert('⏳ شما امروز پاداش روزانه خود را دریافت کرده‌اید! فردا مجدداً مراجعه کنید.');
-        return;
-      }
-
       window.currentBalance += 1.00;
-      localStorage.setItem('lastClaimDate', today);
       updateBalanceDisplay();
-      alert('🎉 ۱ USDT پاداش روزانه با موفقیت به موجودی شما اضافه شد!');
+      alert('🎉 ۱ USDT با موفقیت به موجودی شما اضافه شد!');
     }
 
     function openWithdrawModal() {
