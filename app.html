@@ -182,13 +182,16 @@
     </div>
 
     <div class="notice-box" id="withdrawNotice" style="font-size: 11px;">
-      ℹ️ برداشت اصل سرمایه (تا ۸۰٪) ۵ روز پس از اولین واریز فعال می‌شود.
+      ℹ️ برداشت اصل سرمایه (تا ۸۰٪) ۵ روز پس از واریز حداقل ۲۰ USDT فعال می‌شود.
     </div>
 
     <div class="card">
-      <h3 style="margin-top: 0;">🎁 دریافت پاداش تتر</h3>
-      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 15px;">برای دریافت ۱ USDT هدیه روی دکمه زیر کلیک کنید!</p>
-      <button class="btn btn-primary" id="claimBtn" style="width: 100%;" onclick="claimDaily()">🎁 دریافت ۱ USDT هدیه</button>
+      <h3 style="margin-top: 0;">🎁 پاداش روزانه</h3>
+      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 15px;">هر ۲۴ ساعت یک‌بار ۱ USDT دریافت کنید!</p>
+      <div class="notice-box" id="claimNotice">
+        🔒 پاداش روزانه نیازمند حداقل <b>۲۰ USDT</b> واریزی است.
+      </div>
+      <button class="btn btn-primary btn-locked" id="claimBtn" style="width: 100%;" onclick="claimDaily()">🔒 قفل است (نیازمند ۲۰ USDT واریز)</button>
     </div>
   </div>
 
@@ -199,7 +202,7 @@
       <p style="font-size: 12px; color: var(--text-sub);">یکی از جعبه‌ها را انتخاب کن! اگر خوش‌شانس باشی <b>۰.۵ USDT</b> برنده می‌شوی.</p>
       
       <div class="notice-box" id="gameNotice">
-        🔒 بازی فقط برای حساب‌های با حداقل <b>۲۰ USDT</b> موجودی فعال است.
+        🔒 بازی فقط برای حساب‌های با حداقل <b>۲۰ USDT</b> واریزی فعال است.
       </div>
 
       <div class="boxes-container">
@@ -218,7 +221,7 @@
       <h3 style="margin-top: 0;">🎰 گردونه شانس</h3>
       <div style="font-size: 60px; margin: 20px 0;">🎰</div>
       <div class="notice-box" id="spinNotice">
-        🔒 گردونه شانس فقط برای حساب‌های با حداقل <b>۲۰ USDT</b> موجودی فعال است.
+        🔒 گردونه شانس فقط برای حساب‌های با حداقل <b>۲۰ USDT</b> واریزی فعال است.
       </div>
       <button class="btn btn-primary btn-locked" id="spinBtn" style="width: 100%;" onclick="spinWheel()">🔒 چرخاندن گردونه</button>
     </div>
@@ -229,9 +232,12 @@
     <div class="card">
       <h3 style="margin-top: 0;">👥 دعوت از دوستان</h3>
       <p style="font-size: 13px; color: var(--text-sub);">با دعوت از دوستان خود پاداش بگیرید!</p>
-      <div class="wallet-address" id="refLinkText">در حال ساخت لینک...</div>
-      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="shareRefLink()">🚀 ارسال لینک به دوستان در تلگرام</button>
-      <button class="btn btn-secondary" style="width: 100%;" onclick="copyRefLink()">📋 کپی کردن لینک دعوت</button>
+      <div class="notice-box" id="refNotice">
+        🔒 سیستم دعوت از دوستان فقط برای حساب‌های با حداقل <b>۲۰ USDT</b> واریزی فعال است.
+      </div>
+      <div class="wallet-address" id="refLinkText">🔒 غیرفعال</div>
+      <button class="btn btn-primary btn-locked" id="refShareBtn" style="width: 100%; margin-bottom: 10px;" onclick="shareRefLink()">🚀 ارسال لینک به دوستان در تلگرام</button>
+      <button class="btn btn-secondary btn-locked" id="refCopyBtn" style="width: 100%;" onclick="copyRefLink()">📋 کپی کردن لینک دعوت</button>
     </div>
   </div>
 
@@ -297,8 +303,6 @@
       }
 
       window.myRefLink = 'https://t.me/SiemenS_bot?start=' + userId;
-      document.getElementById('refLinkText').innerText = window.myRefLink;
-
       window.currentBalance = parseFloat(localStorage.getItem('balance')) || 0.00;
       updateBalanceDisplay();
     };
@@ -307,25 +311,32 @@
       document.getElementById('balance').innerText = window.currentBalance.toFixed(2) + ' USDT';
       localStorage.setItem('balance', window.currentBalance);
 
+      // چک کردن اینکه آیا کاربر سابقه واریز حداقل ۲۰ تتر دارد یا خیر
+      const hasDeposited20 = localStorage.getItem('hasDeposited20') === 'true' || window.currentBalance >= 20.00;
+      if (window.currentBalance >= 20.00 && !localStorage.getItem('hasDeposited20')) {
+        localStorage.setItem('hasDeposited20', 'true');
+        localStorage.setItem('firstDepositDate', new Date().getTime());
+      }
+
       const claimBtn = document.getElementById('claimBtn');
       const spinBtn = document.getElementById('spinBtn');
       const gameBtn = document.getElementById('gameBtn');
       const withdrawBtn = document.getElementById('withdrawBtn');
+      const refShareBtn = document.getElementById('refShareBtn');
+      const refCopyBtn = document.getElementById('refCopyBtn');
 
+      const claimNotice = document.getElementById('claimNotice');
       const spinNotice = document.getElementById('spinNotice');
       const gameNotice = document.getElementById('gameNotice');
       const withdrawNotice = document.getElementById('withdrawNotice');
+      const refNotice = document.getElementById('refNotice');
 
       const today = new Date().toDateString();
+      const lastClaim = localStorage.getItem('lastClaimDate');
       const lastSpin = localStorage.getItem('lastSpinDate');
       const lastGame = localStorage.getItem('lastGameDate');
 
-      // ثبت اولین واریز بالای ۲۰ تتر
-      if (window.currentBalance >= 20.00 && !localStorage.getItem('firstDepositDate')) {
-        localStorage.setItem('firstDepositDate', new Date().getTime());
-      }
-
-      // محاسبه روزهای گذشته
+      // محاسبه روزهای گذشته از واریز
       const firstDepositDate = localStorage.getItem('firstDepositDate');
       let daysPassed = 0;
       if (firstDepositDate) {
@@ -333,11 +344,11 @@
         daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
       }
 
-      // تنظیم دکمه برداشت (تا ۸۰ درصد)
-      if (window.currentBalance < 20.00) {
+      // ۱. بخش برداشت
+      if (!hasDeposited20) {
         withdrawBtn.classList.add('btn-locked');
         withdrawBtn.innerText = '🔒 برداشت';
-        withdrawNotice.innerText = 'ℹ️ برداشت اصل سرمایه (تا ۸۰٪) نیازمند حداقل ۲۰ USDT موجودی است.';
+        withdrawNotice.innerText = 'ℹ️ برداشت اصل سرمایه (تا ۸۰٪) نیازمند حداقل ۲۰ USDT واریزی است.';
       } else if (daysPassed < 5) {
         const daysLeft = 5 - daysPassed;
         withdrawBtn.classList.add('btn-locked');
@@ -350,50 +361,102 @@
         withdrawNotice.innerText = '✅ شرط ۵ روز سپری شده است. می‌توانید تا ۸۰٪ سرمایه خود را برداشت کنید.';
       }
 
-      // دکمه پاداش همیشه فعال است
-      claimBtn.classList.remove('btn-locked');
-      claimBtn.classList.add('btn-primary');
-      claimBtn.innerText = '🎁 دریافت ۱ USDT هدیه';
+      // ۲. پاداش روزانه (شرط واریز ۲۰ تتر + ۲۴ ساعت)
+      if (!hasDeposited20) {
+        claimBtn.classList.add('btn-locked');
+        claimBtn.classList.remove('btn-primary');
+        claimBtn.innerText = '🔒 قفل است (نیازمند ۲۰ USDT واریز)';
+        claimNotice.style.display = 'block';
+      } else if (lastClaim === today) {
+        claimBtn.classList.add('btn-locked');
+        claimBtn.classList.remove('btn-primary');
+        claimBtn.innerText = '✅ پاداش امروز دریافت شد';
+        claimNotice.style.display = 'none';
+      } else {
+        claimBtn.classList.remove('btn-locked');
+        claimBtn.classList.add('btn-primary');
+        claimBtn.innerText = '🎁 دریافت پاداش امروز';
+        claimNotice.style.display = 'none';
+      }
 
-      // گردونه
-      if (window.currentBalance < 20.00) {
+      // ۳. گردونه شانس (شرط واریز ۲۰ تتر + ۲۴ ساعت)
+      if (!hasDeposited20) {
         spinBtn.classList.add('btn-locked');
+        spinBtn.classList.remove('btn-primary');
         spinBtn.innerText = '🔒 چرخاندن گردونه';
         spinNotice.style.display = 'block';
       } else if (lastSpin === today) {
         spinBtn.classList.add('btn-locked');
+        spinBtn.classList.remove('btn-primary');
         spinBtn.innerText = '✅ فرصت امروز استفاده شد';
         spinNotice.style.display = 'none';
       } else {
         spinBtn.classList.remove('btn-locked');
+        spinBtn.classList.add('btn-primary');
         spinBtn.innerText = '🎰 چرخاندن گردونه';
         spinNotice.style.display = 'none';
       }
 
-      // بازی
-      if (window.currentBalance < 20.00) {
+      // ۴. بازی جعبه شانس (شرط واریز ۲۰ تتر + ۲۴ ساعت)
+      if (!hasDeposited20) {
         gameBtn.classList.add('btn-locked');
+        gameBtn.classList.remove('btn-primary');
         gameBtn.innerText = '🔒 بازی قفل است';
         gameNotice.style.display = 'block';
       } else if (lastGame === today) {
         gameBtn.classList.add('btn-locked');
+        gameBtn.classList.remove('btn-primary');
         gameBtn.innerText = '✅ بازی امروز انجام شد';
         gameNotice.style.display = 'none';
       } else {
         gameBtn.classList.remove('btn-locked');
+        gameBtn.classList.add('btn-primary');
         gameBtn.innerText = '🎯 یک جعبه را انتخاب کنید';
         gameNotice.style.display = 'none';
       }
+
+      // ۵. سیستم دعوت از دوستان (شرط واریز ۲۰ تتر)
+      if (!hasDeposited20) {
+        refNotice.style.display = 'block';
+        document.getElementById('refLinkText').innerText = '🔒 پس از واریز ۲۰ USDT فعال می‌شود';
+        refShareBtn.classList.add('btn-locked');
+        refShareBtn.classList.remove('btn-primary');
+        refCopyBtn.classList.add('btn-locked');
+        refCopyBtn.classList.remove('btn-secondary');
+      } else {
+        refNotice.style.display = 'none';
+        document.getElementById('refLinkText').innerText = window.myRefLink;
+        refShareBtn.classList.remove('btn-locked');
+        refShareBtn.classList.add('btn-primary');
+        refCopyBtn.classList.remove('btn-locked');
+        refCopyBtn.classList.add('btn-secondary');
+      }
     }
 
-    // تابع پاداش نامحدود بدون قفل ۲۴ ساعته
     function claimDaily() {
+      const hasDeposited20 = localStorage.getItem('hasDeposited20') === 'true' || window.currentBalance >= 20.00;
+      
+      if (!hasDeposited20) {
+        alert('⚠️ برای دریافت پاداش روزانه، ابتدا باید حداقل ۲۰ USDT حساب خود را شارژ کنید.');
+        return;
+      }
+
+      const today = new Date().toDateString();
+      const lastClaim = localStorage.getItem('lastClaimDate');
+
+      if (lastClaim === today) {
+        alert('⏳ شما امروز پاداش روزانه خود را دریافت کرده‌اید! فردا مجدداً مراجعه کنید.');
+        return;
+      }
+
       window.currentBalance += 1.00;
+      localStorage.setItem('lastClaimDate', today);
       updateBalanceDisplay();
-      alert('🎉 ۱ USDT با موفقیت به موجودی شما اضافه شد!');
+      alert('🎉 ۱ USDT پاداش روزانه با موفقیت به موجودی شما اضافه شد!');
     }
 
     function openWithdrawModal() {
+      const hasDeposited20 = localStorage.getItem('hasDeposited20') === 'true' || window.currentBalance >= 20.00;
       const firstDepositDate = localStorage.getItem('firstDepositDate');
       let daysPassed = 0;
       if (firstDepositDate) {
@@ -401,7 +464,7 @@
         daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
       }
 
-      if (window.currentBalance < 20.00) {
+      if (!hasDeposited20) {
         alert('⚠️ برای امکان برداشت، ابتدا باید حساب خود را حداقل ۲۰ USDT شارژ کنید.');
         return;
       }
@@ -445,7 +508,9 @@
     }
 
     function playGame(boxNumber) {
-      if (window.currentBalance < 20.00) {
+      const hasDeposited20 = localStorage.getItem('hasDeposited20') === 'true' || window.currentBalance >= 20.00;
+      
+      if (!hasDeposited20) {
         alert('⚠️ برای انجام بازی، ابتدا باید حداقل ۲۰ USDT حساب خود را شارژ کنید.');
         return;
       }
@@ -472,7 +537,9 @@
     }
 
     function spinWheel() {
-      if (window.currentBalance < 20.00) {
+      const hasDeposited20 = localStorage.getItem('hasDeposited20') === 'true' || window.currentBalance >= 20.00;
+
+      if (!hasDeposited20) {
         alert('⚠️ برای چرخاندن گردونه، ابتدا باید حداقل ۲۰ USDT حساب خود را شارژ کنید.');
         return;
       }
@@ -501,6 +568,11 @@
     }
 
     function shareRefLink() {
+      const hasDeposited20 = localStorage.getItem('hasDeposited20') === 'true' || window.currentBalance >= 20.00;
+      if (!hasDeposited20) {
+        alert('⚠️ برای فعال‌سازی سیستم دعوت، ابتدا باید حداقل ۲۰ USDT حساب خود را شارژ کنید.');
+        return;
+      }
       const shareText = 'سلام! به برنامه زیمنس بپیوندید و پاداش تتر بگیرید 🎁:';
       const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(window.myRefLink) + '&text=' + encodeURIComponent(shareText);
       if (window.Telegram && window.Telegram.WebApp) {
@@ -511,6 +583,11 @@
     }
 
     function copyRefLink() {
+      const hasDeposited20 = localStorage.getItem('hasDeposited20') === 'true' || window.currentBalance >= 20.00;
+      if (!hasDeposited20) {
+        alert('⚠️ برای فعال‌سازی سیستم دعوت، ابتدا باید حداقل ۲۰ USDT حساب خود را شارژ کنید.');
+        return;
+      }
       navigator.clipboard.writeText(window.myRefLink);
       alert('لینک دعوت اختصاصی شما کپی شد!');
     }
