@@ -1,66 +1,93 @@
-<!DOCTYPE html>
+[13:52, 29.8.2026] بوخوم: const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
+app.use(express.json());
+
+const users = {};
+
+app.get('/api/user/:id', (req, res) => {
+    const userId = req.params.id;
+    if (!users[userId]) {
+        users[userId] = { balance: 0.00, lastClaim: null };
+    }
+    res.json(users[userId]);
+});
+
+app.post('/api/claim', (req, res) => {
+    const { userId } = req.body;
+    if…
+[14:08, 29.8.2026] بوخوم: <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SiemenS Tether App</title>
+    <title>SiemenS Mini-App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --card-bg: rgba(30, 41, 59, 0.9);
-            --accent-color: #10b981;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-        }
-        * { box-sizing: border-box; user-select: none; }
         body {
-            background: var(--bg-gradient);
-            color: var(--text-main);
             font-family: system-ui, -apple-system, sans-serif;
+            background-color: #121526;
+            color: #ffffff;
             margin: 0;
-            padding: 20px 15px 100px 15px;
-            min-height: 100vh;
-        }
-        .container { max-width: 450px; margin: 0 auto; }
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
             padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .balance-title { font-size: 14px; color: var(--text-sub); margin-bottom: 5px; }
-        .balance-amount { font-size: 32px; font-weight: bold; color: var(--accent-color); }
-        .btn {
-            background: var(--accent-color);
-            color: #fff;
-            border: none;
-            padding: 12px 24px;
+        .status {
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #00e676;
+        }
+        .card {
+            background-color: #1d2238;
             border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .title { color: #8a92b2; font-size: 14px; margin-bottom: 8px; }
+        .balance { color: #00e676; font-size: 32px; font-weight: bold; }
+        .btn {
+            background-color: #00c853;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            width: 100%;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
         }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        #loading { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .btn:disabled { background-color: #555; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="loading">در حال اتصال به سرور...</div>
-        <div class="card">
-            <div class="balance-title">موجودی حساب شما</div>
-            <div class="balance-amount"><span id="balance">0.00</span> USDT</div>
-        </div>
-        <div class="card">
-            <div class="balance-title">پاداش روزانه</div>
-            <button id="claimBtn" class="btn" onclick="claimDaily()">دریافت پاداش</button>
-        </div>
+
+    <div class="status" id="status">در حال اتصال به سرور...</div>
+
+    <div class="card">
+        <div class="title">موجودی حساب شما</div>
+        <div class="balance"><span id="balance">0.00</span> USDT</div>
+    </div>
+
+    <div class="card">
+        <div class="title">پاداش روزانه</div>
+        <button class="btn" id="claimBtn" onclick="claimReward()">دریافت پاداش</button>
     </div>
 
     <script>
@@ -68,42 +95,42 @@
         tg.expand();
 
         const SERVER_URL = 'https://tether-bot-app.onrender.com';
-        const user = tg.initDataUnsafe?.user || { id: 123456, first_name: "تست" };
+        const userId = tg.initDataUnsafe?.user?.id || '123456';
 
-        async function loadUserData() {
+        async function fetchUserData() {
             try {
-                const res = await fetch(${SERVER_URL}/api/user/${user.id});
-                const data = await res.json();
+                const response = await fetch(${SERVER_URL}/api/user/${userId});
+                const data = await response.json();
                 document.getElementById('balance').innerText = data.balance.toFixed(2);
-                document.getElementById('loading').style.display = 'none';
-            } catch (err) {
-                document.getElementById('loading').innerText = 'خطا در برقراری ارتباط با سرور';
+                document.getElementById('status').innerText = 'متصل شد';
+            } catch (error) {
+                document.getElementById('status').innerText = 'خطا در اتصال به سرور!';
+                console.error(error);
             }
         }
 
-        async function claimDaily() {
+        async function claimReward() {
             const btn = document.getElementById('claimBtn');
             btn.disabled = true;
             try {
-                const res = await fetch(${SERVER_URL}/api/claim, {
+                const response = await fetch(${SERVER_URL}/api/claim, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: user.id })
+                    body: JSON.stringify({ userId: userId })
                 });
-                const data = await res.json();
+                const data = await response.json();
                 if (data.success) {
                     document.getElementById('balance').innerText = data.newBalance.toFixed(2);
-                    alert('پاداش روزانه با موفقیت دریافت شد!');
-                } else {
-                    alert(data.message || 'قبلاً دریافت کرده‌اید.');
+                    alert('پاداش دریافت شد!');
                 }
-            } catch (err) {
-                alert('خطایی رخ داد.');
+            } catch (error) {
+                alert('خطا در دریافت پاداش!');
+            } finally {
+                btn.disabled = false;
             }
-            btn.disabled = false;
         }
 
-        loadUserData();
+        fetchUserData();
     </script>
 </body>
 </html>
