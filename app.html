@@ -70,7 +70,7 @@
 
     .btn-primary { background: #10b981; color: #000; }
     .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #fff; }
-    .btn-locked { background: rgba(255, 255, 255, 0.05) !important; color: #64748b !important; }
+    .btn-locked { background: rgba(255, 255, 255, 0.05) !important; color: #64748b !important; cursor: not-allowed; }
 
     .notice-box {
       background: rgba(245, 158, 11, 0.15);
@@ -157,7 +157,7 @@
 
     <div class="btn-group">
       <button class="btn btn-primary" onclick="openDepositModal()">📥 واریز</button>
-      <button class="btn btn-secondary" onclick="openWithdrawModal()">📤 برداشت</button>
+      <button class="btn btn-locked" onclick="openWithdrawModal()">🔒 برداشت</button>
     </div>
 
     <div class="card">
@@ -219,17 +219,6 @@
     </div>
   </div>
 
-  <!-- مودال برداشت -->
-  <div class="modal" id="withdrawModal">
-    <div class="modal-content">
-      <h3 style="margin-top:0;">📤 برداشت وجه</h3>
-      <p style="font-size: 12px; color: var(--text-sub);">آدرس ولت BEP20 خود را وارد کنید:</p>
-      <input type="text" placeholder="0x..." style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: #fff; margin: 15px 0;" id="withdrawAddr">
-      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="submitWithdraw()">ثبت درخواست</button>
-      <button class="btn btn-secondary" style="width: 100%;" onclick="closeModal('withdrawModal')">انصراف</button>
-    </div>
-  </div>
-
   <script>
     window.onload = function() {
       if (window.Telegram && window.Telegram.WebApp) {
@@ -264,7 +253,6 @@
       const lastClaim = localStorage.getItem('lastClaimDate');
       const lastSpin = localStorage.getItem('lastSpinDate');
 
-      // تنظیم دکمه دریافت پاداش
       if (window.currentBalance < 20.00) {
         claimBtn.classList.add('btn-locked');
         claimBtn.innerText = '🔒 دریافت پاداش امروز';
@@ -279,7 +267,6 @@
         dailyNotice.style.display = 'none';
       }
 
-      // تنظیم دکمه گردونه
       if (window.currentBalance < 20.00) {
         spinBtn.classList.add('btn-locked');
         spinBtn.innerText = '🔒 چرخاندن گردونه';
@@ -329,7 +316,7 @@
         return;
       }
 
-      const reward = parseFloat((Math.random() * 4 + 1).toFixed(2)); // بین ۱ تا ۵ یورو
+      const reward = parseFloat((Math.random() * 4 + 1).toFixed(2));
       window.currentBalance += reward;
       localStorage.setItem('lastSpinDate', today);
       updateBalanceDisplay();
@@ -360,23 +347,15 @@
     }
 
     function openDepositModal() { document.getElementById('depositModal').style.display = 'flex'; }
-    function openWithdrawModal() { document.getElementById('withdrawModal').style.display = 'flex'; }
+    function openWithdrawModal() { 
+      alert('🔒 بخش برداشت به‌طور موقت غیرفعال است.'); 
+    }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function copyWallet() {
       const addr = document.getElementById('walletAddr').innerText;
       navigator.clipboard.writeText(addr);
       alert('آدرس کیف پول کپی شد!');
-    }
-
-    function submitWithdraw() {
-      const addr = document.getElementById('withdrawAddr').value;
-      if (!addr) {
-        alert('لطفاً آدرس ولت را وارد کنید.');
-        return;
-      }
-      alert('درخواست برداشت ثبت شد و پس از بررسی واریز خواهد شد.');
-      closeModal('withdrawModal');
     }
   </script>
 </body>
