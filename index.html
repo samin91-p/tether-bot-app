@@ -30,10 +30,11 @@
 
     <script>
         const tg = window.Telegram.WebApp;
+        tg.ready();
         tg.expand();
 
         const SERVER = 'https://tether-bot-app.onrender.com';
-        const userId = tg.initDataUnsafe?.user?.id || '123456';
+        const userId = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) ? String(tg.initDataUnsafe.user.id) : '123456';
 
         function loadData() {
             fetch(${SERVER}/api/user/${userId})
@@ -42,7 +43,7 @@
                     document.getElementById('balance').innerText = Number(data.balance).toFixed(2);
                     document.getElementById('status').innerText = 'متصل شد';
                 })
-                .catch(() => {
+                .catch(err => {
                     document.getElementById('status').innerText = 'خطا در اتصال!';
                 });
         }
@@ -52,7 +53,7 @@
             fetch(${SERVER}/api/claim, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: String(userId) })
+                body: JSON.stringify({ userId: userId })
             })
             .then(res => res.json())
             .then(data => {
@@ -61,7 +62,7 @@
                     document.getElementById('status').innerText = 'پاداش دریافت شد!';
                 }
             })
-            .catch(() => {
+            .catch(err => {
                 document.getElementById('status').innerText = 'خطا در دریافت!';
             });
         }
