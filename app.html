@@ -52,11 +52,9 @@ transition: transform 0.1s;
 .btn-secondary { background-color: var(--card-bg); color: var(--text-color); border: 1px solid rgba(255,255,255,0.1); }
 .user-info { font-size: 15px; color: var(--subtext-color); margin-bottom: 15px; font-weight: 500; }
 
-/* تب‌ها */
 .tab-content { display: none; width: 100%; max-width: 350px; }
 .tab-content.active { display: block; }
 
-/* منوی پایین */
 .bottom-nav {
 position: fixed;
 bottom: 0;
@@ -80,6 +78,37 @@ cursor: pointer;
 }
 .nav-item.active { color: var(--accent-color); font-weight: bold; }
 .nav-icon { font-size: 18px; }
+
+.modal {
+display: none;
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0,0,0,0.8);
+align-items: center;
+justify-content: center;
+z-index: 100;
+padding: 20px;
+}
+.modal-content {
+background: var(--card-bg);
+padding: 20px;
+border-radius: 16px;
+max-width: 320px;
+width: 100%;
+text-align: center;
+box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.wallet-address {
+background: #0f172a;
+padding: 12px;
+border-radius: 8px;
+font-size: 12px;
+word-break: break-all;
+margin: 15px 0;
+color: #38bdf8;
+border: 1px dashed rgba(255,255,255,0.2);
+font-family: monospace;
+}
 </style>
 </head>
 <body>
@@ -94,7 +123,7 @@ cursor: pointer;
 </div>
 
 <div class="btn-group">
-<button class="btn btn-primary" onclick="alert('بخش واریز بزودی فعال می‌شود')">واریز</button>
+<button class="btn btn-primary" onclick="openDepositModal()">واریز</button>
 <button class="btn btn-secondary" onclick="alert('بخش برداشت بزودی فعال می‌شود')">برداشت</button>
 </div>
 
@@ -143,6 +172,19 @@ cursor: pointer;
 </div>
 </div>
 
+<!-- مودال واریز -->
+<div class="modal" id="depositModal">
+<div class="modal-content">
+<h3>📥 واریز تتر (USDT)</h3>
+<p style="font-size: 12px; color: #f59e0b; margin-top: 5px;">شبکه: BEP20 (BNB Smart Chain)</p>
+
+<div class="wallet-address" id="walletAddr">0xDae2e4e81A39C4E68faFaFd8b6aa05192f7A123</div>
+
+<button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="copyWallet()">کپی آدرس ولت</button>
+<button class="btn btn-secondary" style="width: 100%;" onclick="closeDepositModal()">انصراف</button>
+</div>
+</div>
+
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
@@ -157,11 +199,17 @@ userId = user.id;
 
 document.getElementById('refLink').innerText = `https://t.me/SiemenS_bot?start=${userId}`;
 
-let currentBalance = 0.00;
+let currentBalance = parseFloat(localStorage.getItem('balance')) || 0.00;
+updateBalanceDisplay();
+
+function updateBalanceDisplay() {
+document.getElementById('balance').innerText = currentBalance.toFixed(2) + ' $';
+localStorage.setItem('balance', currentBalance);
+}
 
 function claimDaily() {
 currentBalance += 1.00;
-document.getElementById('balance').innerText = currentBalance.toFixed(2) + ' $';
+updateBalanceDisplay();
 alert('۱ تتر پاداش روزانه به حساب شما اضافه شد!');
 }
 
@@ -180,10 +228,22 @@ alert('لینک دعوت شما کپی شد!');
 }
 
 function spinWheel() {
-const reward = (Math.random() * 5).toFixed(2);
-currentBalance += parseFloat(reward);
-document.getElementById('balance').innerText = currentBalance.toFixed(2) + ' $';
+const reward = parseFloat((Math.random() * 5).toFixed(2));
+currentBalance += reward;
+updateBalanceDisplay();
 alert(`تبریک! شما ${reward} تتر برنده شدید!`);
+}
+
+function openDepositModal() {
+document.getElementById('depositModal').style.display = 'flex';
+}
+function closeDepositModal() {
+document.getElementById('depositModal').style.display = 'none';
+}
+function copyWallet() {
+const addr = document.getElementById('walletAddr').innerText;
+navigator.clipboard.writeText(addr);
+alert('آدرس کیف پول کپی شد!');
 }
 </script>
 </body>
