@@ -8,20 +8,18 @@
   <style>
     :root {
       --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-bg: rgba(30, 41, 59, 0.9);
       --accent-color: #10b981;
       --text-main: #f8fafc;
       --text-sub: #94a3b8;
-      --warning-bg: rgba(245, 158, 11, 0.15);
-      --warning-border: rgba(245, 158, 11, 0.4);
     }
 
-    * { box-sizing: border-box; user-select: none; }
+    * { box-sizing: border-box; }
 
     body {
       background: var(--bg-gradient);
       color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       margin: 0;
       padding: 20px 15px 100px 15px;
       min-height: 100vh;
@@ -32,8 +30,6 @@
 
     .user-badge {
       background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 8px 18px;
       border-radius: 20px;
       font-size: 14px;
@@ -46,22 +42,18 @@
 
     .card {
       background: var(--card-bg);
-      backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 24px;
       padding: 22px;
       text-align: center;
       margin-bottom: 16px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
     }
 
-    .balance-title { font-size: 13px; color: var(--text-sub); }
     .balance-amount {
       font-size: 38px;
-      font-weight: 800;
+      font-weight: bold;
       color: var(--accent-color);
-      margin: 12px 0;
-      text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+      margin: 10px 0;
     }
 
     .btn-group { display: flex; gap: 12px; width: 100%; max-width: 380px; margin-bottom: 16px; }
@@ -71,44 +63,23 @@
       padding: 14px;
       border: none;
       border-radius: 16px;
-      font-weight: 700;
+      font-weight: bold;
       font-size: 15px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn:active { transform: scale(0.96); }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #000;
     }
 
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-main);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    .btn-locked {
-      background: rgba(255, 255, 255, 0.1) !important;
-      color: #64748b !important;
-      cursor: not-allowed;
-    }
+    .btn-primary { background: #10b981; color: #000; }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    .btn-locked { background: rgba(255, 255, 255, 0.05) !important; color: #64748b !important; }
 
     .notice-box {
-      background: var(--warning-bg);
-      border: 1px solid var(--warning-border);
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
       color: #fbbf24;
       padding: 12px;
       border-radius: 14px;
       font-size: 12px;
-      line-height: 1.6;
       margin-bottom: 16px;
-      text-align: center;
     }
 
     .bottom-nav {
@@ -118,8 +89,7 @@
       transform: translateX(-50%);
       width: calc(100% - 30px);
       max-width: 380px;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(20px);
+      background: #0f172a;
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
       display: flex;
@@ -139,18 +109,16 @@
       flex: 1;
     }
     .nav-item.active { color: var(--accent-color); font-weight: bold; }
-    .nav-icon { font-size: 20px; }
 
-    /* پنجره مودال ثابت و بالاترین لایه */
+    /* پنجره پیام شارژ/برداشت */
     .modal {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+      z-index: 99999;
       padding: 20px;
     }
 
@@ -162,7 +130,6 @@
       max-width: 340px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
     .wallet-address {
@@ -182,10 +149,10 @@
 
   <div class="user-badge" id="userInfo">✨ خوش آمدید</div>
 
-  <!-- تب کیف پول -->
+  <!-- کیف پول -->
   <div id="tab-wallet" class="tab-content active">
     <div class="card">
-      <div class="balance-title">موجودی کل (USDT / EUR)</div>
+      <div style="font-size: 13px; color: var(--text-sub);">موجودی کل (USDT / EUR)</div>
       <div class="balance-amount" id="balance">0.00 €</div>
     </div>
 
@@ -203,24 +170,21 @@
     </div>
   </div>
 
-  <!-- تب دعوت -->
+  <!-- دعوت -->
   <div id="tab-referral" class="tab-content">
     <div class="card">
       <h3 style="margin-top: 0;">👥 دعوت از دوستان</h3>
-      <p style="font-size: 13px; color: var(--text-sub);">با دعوت از دوستان خود پاداش بنوس دریافت کنید!</p>
-      
-      <div class="wallet-address" id="refLinkText">در حال دریافت لینک دعوت...</div>
-      
+      <p style="font-size: 13px; color: var(--text-sub);">با دعوت از دوستان خود پاداش بگیرید!</p>
+      <div class="wallet-address" id="refLinkText">در حال ساخت لینک...</div>
       <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="shareRefLink()">🚀 ارسال لینک به دوستان در تلگرام</button>
       <button class="btn btn-secondary" style="width: 100%;" onclick="copyRefLink()">📋 کپی کردن لینک دعوت</button>
     </div>
   </div>
 
-  <!-- تب گردونه شانس -->
+  <!-- گردونه -->
   <div id="tab-spin" class="tab-content">
     <div class="card">
       <h3 style="margin-top: 0;">🎰 گردونه شانس</h3>
-      <p style="font-size: 13px; color: var(--text-sub);">شانس خود را برای دریافت جوایز نقدی امتحان کنید!</p>
       <div style="font-size: 60px; margin: 20px 0;">🎰</div>
       <div class="notice-box" id="spinNotice">
         🔒 گردونه شانس فقط برای حساب‌های با حداقل <b>۲۰ یورو</b> موجودی فعال است.
@@ -229,18 +193,18 @@
     </div>
   </div>
 
-  <!-- منوی پایینی -->
+  <!-- منو -->
   <div class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('wallet', this)">
-      <span class="nav-icon">💎</span>
+      <span>💎</span>
       <span>کیف پول</span>
     </div>
     <div class="nav-item" onclick="switchTab('spin', this)">
-      <span class="nav-icon">🎰</span>
+      <span>🎰</span>
       <span>گردونه</span>
     </div>
     <div class="nav-item" onclick="switchTab('referral', this)">
-      <span class="nav-icon">👥</span>
+      <span>👥</span>
       <span>دعوت</span>
     </div>
   </div>
@@ -249,7 +213,7 @@
   <div class="modal" id="depositModal">
     <div class="modal-content">
       <h3 style="margin-top:0;">📥 شارژ کیف پول</h3>
-      <p style="font-size: 12px; color: #f59e0b; margin-top: 5px;">شبکه: BEP20 (BNB Smart Chain)</p>
+      <p style="font-size: 12px; color: #f59e0b;">شبکه: BEP20 (BNB Smart Chain)</p>
       <div class="wallet-address" id="walletAddr">0xDae2e4e81A39C4E68faFaFd8b6aa05192f7A123</div>
       <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="copyWallet()">📋 کپی آدرس ولت</button>
       <button class="btn btn-secondary" style="width: 100%;" onclick="closeModal('depositModal')">بستن</button>
@@ -260,43 +224,44 @@
   <div class="modal" id="withdrawModal">
     <div class="modal-content">
       <h3 style="margin-top:0;">📤 برداشت وجه</h3>
-      <p style="font-size: 12px; color: var(--text-sub);">آدرس ولت BEP20 خود را برای تسویه وارد کنید:</p>
-      <input type="text" placeholder="0x..." style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: #fff; margin: 15px 0; box-sizing: border-box;" id="withdrawAddr">
-      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="submitWithdraw()">ثبت درخواست برداشت</button>
+      <p style="font-size: 12px; color: var(--text-sub);">آدرس ولت BEP20 خود را وارد کنید:</p>
+      <input type="text" placeholder="0x..." style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: #fff; margin: 15px 0;" id="withdrawAddr">
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="submitWithdraw()">ثبت درخواست</button>
       <button class="btn btn-secondary" style="width: 100%;" onclick="closeModal('withdrawModal')">انصراف</button>
     </div>
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+    window.onload = function() {
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
+      
+      let userId = '123456';
+      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+        const user = window.Telegram.WebApp.initDataUnsafe.user;
+        document.getElementById('userInfo').innerText = '👤 ' + user.first_name;
+        userId = user.id;
+      }
 
-    let userId = '123456';
-    let botUsername = 'SiemenS_bot'; // نام کاربری ربات شما
+      window.myRefLink = 'https://t.me/SiemenS_bot?start=' + userId;
+      document.getElementById('refLinkText').innerText = window.myRefLink;
 
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-      const user = tg.initDataUnsafe.user;
-      document.getElementById('userInfo').innerText = 👤 ${user.first_name};
-      userId = user.id;
-    }
-
-    const myRefLink = https://t.me/${botUsername}?start=${userId};
-    document.getElementById('refLinkText').innerText = myRefLink;
-
-    let currentBalance = parseFloat(localStorage.getItem('balance')) || 0.00;
-    updateBalanceDisplay();
+      window.currentBalance = parseFloat(localStorage.getItem('balance')) || 0.00;
+      updateBalanceDisplay();
+    };
 
     function updateBalanceDisplay() {
-      document.getElementById('balance').innerText = currentBalance.toFixed(2) + ' €';
-      localStorage.setItem('balance', currentBalance);
+      document.getElementById('balance').innerText = window.currentBalance.toFixed(2) + ' €';
+      localStorage.setItem('balance', window.currentBalance);
 
       const claimBtn = document.getElementById('claimBtn');
       const spinBtn = document.getElementById('spinBtn');
       const dailyNotice = document.getElementById('dailyNotice');
       const spinNotice = document.getElementById('spinNotice');
 
-      if (currentBalance >= 20.00) {
+      if (window.currentBalance >= 20.00) {
         claimBtn.classList.remove('btn-locked');
         claimBtn.innerText = '🎁 دریافت پاداش امروز';
         dailyNotice.style.display = 'none';
@@ -316,42 +281,46 @@
     }
 
     function claimDaily() {
-      if (currentBalance < 20.00) {
+      if (window.currentBalance < 20.00) {
         alert('⚠️ برای دریافت پاداش، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
         return;
       }
-      currentBalance += 1.00;
+      window.currentBalance += 1.00;
       updateBalanceDisplay();
       alert('🎉 ۱ یورو پاداش روزانه اضافه شد!');
     }
 
     function spinWheel() {
-      if (currentBalance < 20.00) {
+      if (window.currentBalance < 20.00) {
         alert('⚠️ برای چرخاندن گردونه، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
         return;
       }
       const reward = parseFloat((Math.random() * 5).toFixed(2));
-      currentBalance += reward;
+      window.currentBalance += reward;
       updateBalanceDisplay();
-      alert(🎉 شما ${reward} یورو برنده شدید!);
+      alert('🎉 شما ' + reward + ' یورو برنده شدید!');
     }
 
     function switchTab(tabName, element) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(function(tab) { tab.classList.remove('active'); });
+      document.querySelectorAll('.nav-item').forEach(function(nav) { nav.classList.remove('active'); });
       
-      document.getElementById(tab-${tabName}).classList.add('active');
+      document.getElementById('tab-' + tabName).classList.add('active');
       element.classList.add('active');
     }
 
     function shareRefLink() {
-      const shareText = سلام! به برنامه زیمنس بپیوندید و پاداش یورویی بگیرید 🎁:;
-      const shareUrl = https://t.me/share/url?url=${encodeURIComponent(myRefLink)}&text=${encodeURIComponent(shareText)};
-      tg.openTelegramLink(shareUrl);
+      const shareText = 'سلام! به برنامه زیمنس بپیوندید و پاداش یورویی بگیرید 🎁:';
+      const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(window.myRefLink) + '&text=' + encodeURIComponent(shareText);
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.openTelegramLink(shareUrl);
+      } else {
+        window.open(shareUrl, '_blank');
+      }
     }
 
     function copyRefLink() {
-      navigator.clipboard.writeText(myRefLink);
+      navigator.clipboard.writeText(window.myRefLink);
       alert('لینک دعوت اختصاصی شما کپی شد!');
     }
 
