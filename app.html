@@ -8,7 +8,7 @@
   <style>
     :root {
       --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-bg: rgba(30, 41, 59, 0.85);
       --accent-color: #10b981;
       --text-main: #f8fafc;
       --text-sub: #94a3b8;
@@ -23,7 +23,7 @@
       color: var(--text-main);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
-      padding: 20px 15px 90px 15px;
+      padding: 20px 15px 100px 15px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -31,10 +31,10 @@
     }
 
     .user-badge {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 8px 16px;
+      padding: 8px 18px;
       border-radius: 20px;
       font-size: 14px;
       color: var(--text-sub);
@@ -47,12 +47,12 @@
     .card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 24px;
       padding: 22px;
       text-align: center;
       margin-bottom: 16px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
     }
 
     .balance-title { font-size: 13px; color: var(--text-sub); }
@@ -75,6 +75,10 @@
       font-size: 15px;
       cursor: pointer;
       transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
     .btn:active { transform: scale(0.96); }
 
@@ -86,15 +90,13 @@
     .btn-secondary {
       background: rgba(255, 255, 255, 0.08);
       color: var(--text-main);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
-    /* استایل دکمه قفل‌شده */
     .btn-locked {
       background: rgba(255, 255, 255, 0.1) !important;
       color: #64748b !important;
       cursor: not-allowed;
-      box-shadow: none !important;
     }
 
     .notice-box {
@@ -106,6 +108,7 @@
       font-size: 12px;
       line-height: 1.6;
       margin-bottom: 16px;
+      text-align: center;
     }
 
     .bottom-nav {
@@ -115,13 +118,14 @@
       transform: translateX(-50%);
       width: calc(100% - 30px);
       max-width: 380px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
       display: flex;
       justify-content: space-around;
       padding: 10px 0;
+      z-index: 50;
     }
 
     .nav-item {
@@ -137,37 +141,39 @@
     .nav-item.active { color: var(--accent-color); font-weight: bold; }
     .nav-icon { font-size: 20px; }
 
+    /* پنجره مودال ثابت و بالاترین لایه */
     .modal {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 9999;
       padding: 20px;
     }
 
     .modal-content {
       background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       padding: 24px;
       border-radius: 24px;
       max-width: 340px;
       width: 100%;
       text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
     .wallet-address {
       background: #0f172a;
       padding: 14px;
       border-radius: 12px;
-      font-size: 12px;
+      font-size: 11px;
       word-break: break-all;
       margin: 16px 0;
       color: #38bdf8;
-      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border: 1px dashed rgba(255, 255, 255, 0.3);
       font-family: monospace;
     }
   </style>
@@ -183,7 +189,6 @@
       <div class="balance-amount" id="balance">0.00 €</div>
     </div>
 
-    <!-- دکمه‌های فعال واریز و برداشت -->
     <div class="btn-group">
       <button class="btn btn-primary" onclick="openDepositModal()">📥 واریز</button>
       <button class="btn btn-secondary" onclick="openWithdrawModal()">📤 برداشت</button>
@@ -198,13 +203,16 @@
     </div>
   </div>
 
-  <!-- تب دعوت (همیشه فعال) -->
+  <!-- تب دعوت -->
   <div id="tab-referral" class="tab-content">
     <div class="card">
       <h3 style="margin-top: 0;">👥 دعوت از دوستان</h3>
-      <p style="font-size: 13px; color: var(--text-sub);">دوستان خود را دعوت کنید و با هربار شارژ حساب آن‌ها پاداش بگیرید!</p>
-      <div class="wallet-address" id="refLink">در حال دریافت لینک...</div>
-      <button class="btn btn-primary" style="width: 100%;" onclick="copyRef()">کپی کردن لینک اختصاصی</button>
+      <p style="font-size: 13px; color: var(--text-sub);">با دعوت از دوستان خود پاداش بنوس دریافت کنید!</p>
+      
+      <div class="wallet-address" id="refLinkText">در حال دریافت لینک دعوت...</div>
+      
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="shareRefLink()">🚀 ارسال لینک به دوستان در تلگرام</button>
+      <button class="btn btn-secondary" style="width: 100%;" onclick="copyRefLink()">📋 کپی کردن لینک دعوت</button>
     </div>
   </div>
 
@@ -243,7 +251,7 @@
       <h3 style="margin-top:0;">📥 شارژ کیف پول</h3>
       <p style="font-size: 12px; color: #f59e0b; margin-top: 5px;">شبکه: BEP20 (BNB Smart Chain)</p>
       <div class="wallet-address" id="walletAddr">0xDae2e4e81A39C4E68faFaFd8b6aa05192f7A123</div>
-      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="copyWallet()">کپی آدرس ولت</button>
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="copyWallet()">📋 کپی آدرس ولت</button>
       <button class="btn btn-secondary" style="width: 100%;" onclick="closeModal('depositModal')">بستن</button>
     </div>
   </div>
@@ -265,13 +273,16 @@
     tg.expand();
 
     let userId = '123456';
+    let botUsername = 'SiemenS_bot'; // نام کاربری ربات شما
+
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
       const user = tg.initDataUnsafe.user;
       document.getElementById('userInfo').innerText = 👤 ${user.first_name};
       userId = user.id;
     }
 
-    document.getElementById('refLink').innerText = https://t.me/SiemenS_bot?start=${userId};
+    const myRefLink = https://t.me/${botUsername}?start=${userId};
+    document.getElementById('refLinkText').innerText = myRefLink;
 
     let currentBalance = parseFloat(localStorage.getItem('balance')) || 0.00;
     updateBalanceDisplay();
@@ -280,7 +291,6 @@
       document.getElementById('balance').innerText = currentBalance.toFixed(2) + ' €';
       localStorage.setItem('balance', currentBalance);
 
-      // بررسی وضعیت قفل بودن پاداش و گردونه (حداقل ۲۰ یورو)
       const claimBtn = document.getElementById('claimBtn');
       const spinBtn = document.getElementById('spinBtn');
       const dailyNotice = document.getElementById('dailyNotice');
@@ -334,10 +344,15 @@
       element.classList.add('active');
     }
 
-    function copyRef() {
-      const link = document.getElementById('refLink').innerText;
-      navigator.clipboard.writeText(link);
-      alert('لینک دعوت کپی شد!');
+    function shareRefLink() {
+      const shareText = سلام! به برنامه زیمنس بپیوندید و پاداش یورویی بگیرید 🎁:;
+      const shareUrl = https://t.me/share/url?url=${encodeURIComponent(myRefLink)}&text=${encodeURIComponent(shareText)};
+      tg.openTelegramLink(shareUrl);
+    }
+
+    function copyRefLink() {
+      navigator.clipboard.writeText(myRefLink);
+      alert('لینک دعوت اختصاصی شما کپی شد!');
     }
 
     function openDepositModal() { document.getElementById('depositModal').style.display = 'flex'; }
