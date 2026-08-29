@@ -1,33 +1,4 @@
- const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
-});
-
-app.use(express.json());
-
-const users = {};
-
-app.get('/api/user/:id', (req, res) => {
-    const userId = req.params.id;
-    if (!users[userId]) {
-        users[userId] = { balance: 0.00, lastClaim: null };
-    }
-    res.json(users[userId]);
-});
-
-app.post('/api/claim', (req, res) => {
-    const { userId } = req.body;
-    if…
-[14:08, 29.8.2026] بوخوم: <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -105,7 +76,6 @@ app.post('/api/claim', (req, res) => {
                 document.getElementById('status').innerText = 'متصل شد';
             } catch (error) {
                 document.getElementById('status').innerText = 'خطا در اتصال به سرور!';
-                console.error(error);
             }
         }
 
@@ -121,7 +91,7 @@ app.post('/api/claim', (req, res) => {
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('balance').innerText = data.newBalance.toFixed(2);
-                    alert('پاداش دریافت شد!');
+                    alert('پاداش با موفقیت دریافت شد!');
                 }
             } catch (error) {
                 alert('خطا در دریافت پاداش!');
