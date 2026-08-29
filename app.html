@@ -20,6 +20,7 @@
             margin-bottom: 20px;
             font-size: 14px;
             color: #00e676;
+            font-weight: bold;
         }
         .card {
             background-color: #1d2238;
@@ -68,33 +69,41 @@
         const SERVER_URL = 'https://tether-bot-app.onrender.com';
         const userId = tg.initDataUnsafe?.user?.id || '123456';
 
+        function updateStatus(text, color) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = text;
+            if (color) statusEl.style.color = color;
+        }
+
         async function fetchUserData() {
             try {
                 const response = await fetch(${SERVER_URL}/api/user/${userId});
+                if (!response.ok) throw new Error('Network error');
                 const data = await response.json();
-                document.getElementById('balance').innerText = data.balance.toFixed(2);
-                document.getElementById('status').innerText = 'متصل شد';
+                document.getElementById('balance').innerText = Number(data.balance).toFixed(2);
+                updateStatus('متصل شد', '#00e676');
             } catch (error) {
-                document.getElementById('status').innerText = 'خطا در اتصال به سرور!';
+                updateStatus('خطا در اتصال به سرور! دوباره تلاش کنید', '#ff5252');
             }
         }
 
         async function claimReward() {
             const btn = document.getElementById('claimBtn');
             btn.disabled = true;
+            updateStatus('در حال ثبت پاداش...', '#ffab00');
             try {
                 const response = await fetch(${SERVER_URL}/api/claim, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userId })
+                    body: JSON.stringify({ userId: String(userId) })
                 });
                 const data = await response.json();
                 if (data.success) {
-                    document.getElementById('balance').innerText = data.newBalance.toFixed(2);
-                    alert('پاداش با موفقیت دریافت شد!');
+                    document.getElementById('balance').innerText = Number(data.newBalance).toFixed(2);
+                    updateStatus('پاداش دریافت شد!', '#00e676');
                 }
             } catch (error) {
-                alert('خطا در دریافت پاداش!');
+                updateStatus('خطا در دریافت پاداش!', '#ff5252');
             } finally {
                 btn.disabled = false;
             }
