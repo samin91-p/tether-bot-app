@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// تنظیم دستی CORS (بدون نیاز به نصب پکیج اضافه)
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -34,6 +33,6 @@ app.post('/api/claim', (req, res) => {
     res.json({ success: true, newBalance: users[userId].balance });
 });
 
-app.listen(PORT, () => {
-    console.log(Server is running on port ${PORT});
+app.listen(PORT, function() {
+    console.log('Server is running on port ' + PORT);
 });
