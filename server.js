@@ -1,16 +1,22 @@
 const express = require('express');
-const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// اجازه اتصال از تمام دامنه‌ها (حل مشکل CORS)
-app.use(cors());
+// تنظیم دستی CORS بدون نیاز به پکیج خارجی
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.json());
 
-// دیتابیس موقت در حافظه
 const users = {};
 
-// دریافت اطلاعات کاربر
 app.get('/api/user/:id', (req, res) => {
     const userId = req.params.id;
     if (!users[userId]) {
@@ -19,14 +25,11 @@ app.get('/api/user/:id', (req, res) => {
     res.json(users[userId]);
 });
 
-// دریافت پاداش روزانه
 app.post('/api/claim', (req, res) => {
     const { userId } = req.body;
     if (!users[userId]) {
         users[userId] = { balance: 0.00, lastClaim: null };
     }
-    
-    // افزودن ۱ دلار به موجودی
     users[userId].balance += 1.00;
     res.json({ success: true, newBalance: users[userId].balance });
 });
