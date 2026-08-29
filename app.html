@@ -18,7 +18,7 @@ background-color: var(--bg-color);
 color: var(--text-color);
 font-family: system-ui, -apple-system, sans-serif;
 margin: 0;
-padding: 20px;
+padding: 15px 15px 80px 15px;
 display: flex;
 flex-direction: column;
 align-items: center;
@@ -33,10 +33,11 @@ box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 text-align: center;
 margin-bottom: 15px;
 border: 1px solid rgba(255,255,255,0.05);
+box-sizing: border-box;
 }
 .balance-title { font-size: 14px; color: var(--subtext-color); }
 .balance-amount { font-size: 32px; font-weight: bold; color: var(--accent-color); margin: 10px 0; }
-.btn-group { display: flex; gap: 10px; width: 100%; max-width: 350px; margin-bottom: 20px; }
+.btn-group { display: flex; gap: 10px; width: 100%; max-width: 350px; margin-bottom: 15px; }
 .btn {
 flex: 1;
 padding: 12px;
@@ -49,13 +50,44 @@ transition: transform 0.1s;
 .btn:active { transform: scale(0.98); }
 .btn-primary { background-color: var(--accent-color); color: #000; }
 .btn-secondary { background-color: var(--card-bg); color: var(--text-color); border: 1px solid rgba(255,255,255,0.1); }
-.user-info { font-size: 14px; color: var(--subtext-color); margin-bottom: 15px; }
+.user-info { font-size: 15px; color: var(--subtext-color); margin-bottom: 15px; font-weight: 500; }
+
+/* تب‌ها */
+.tab-content { display: none; width: 100%; max-width: 350px; }
+.tab-content.active { display: block; }
+
+/* منوی پایین */
+.bottom-nav {
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+background-color: #1e293b;
+display: flex;
+justify-content: space-around;
+padding: 10px 0;
+border-top: 1px solid rgba(255,255,255,0.1);
+}
+.nav-item {
+color: var(--subtext-color);
+text-decoration: none;
+font-size: 12px;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 4px;
+cursor: pointer;
+}
+.nav-item.active { color: var(--accent-color); font-weight: bold; }
+.nav-icon { font-size: 18px; }
 </style>
 </head>
 <body>
 
-<div class="user-info" id="userInfo">در حال دریافت اطلاعات کاربر...</div>
+<div class="user-info" id="userInfo">خوش آمدید!</div>
 
+<!-- تب اصلی (کیف پول) -->
+<div id="tab-wallet" class="tab-content active">
 <div class="card">
 <div class="balance-title">موجودی کل (USDT)</div>
 <div class="balance-amount" id="balance">0.00 $</div>
@@ -71,16 +103,59 @@ transition: transform 0.1s;
 <p style="font-size: 12px; color: var(--subtext-color);">هر روز سر بزن و ۱ تتر رایگان بگیر!</p>
 <button class="btn btn-primary" style="width: 100%;" onclick="claimDaily()">دریافت پاداش امروز</button>
 </div>
+</div>
+
+<!-- تب زیرمجموعه‌گیری -->
+<div id="tab-referral" class="tab-content">
+<div class="card">
+<h3>👥 دعوت از دوستان</h3>
+<p style="font-size: 13px; color: var(--subtext-color);">با دعوت هر دوست، ۲ تتر پاداش بگیرید!</p>
+<div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; font-size: 12px; word-break: break-all; margin: 10px 0;" id="refLink">
+در حال ساخت لینک اختصاصی...
+</div>
+<button class="btn btn-primary" style="width: 100%;" onclick="copyRef()">کپی کردن لینک دعوت</button>
+</div>
+</div>
+
+<!-- تب گردونه شانس -->
+<div id="tab-spin" class="tab-content">
+<div class="card">
+<h3>🎰 گردونه شانس</h3>
+<p style="font-size: 13px; color: var(--subtext-color);">شانس خود را برای بردن تا ۱۰ تتر امتحان کنید!</p>
+<div style="font-size: 50px; margin: 15px 0;">🎰</div>
+<button class="btn btn-primary" style="width: 100%;" onclick="spinWheel()">چرخاندن گردونه</button>
+</div>
+</div>
+
+<!-- منوی پایینی -->
+<div class="bottom-nav">
+<div class="nav-item active" onclick="switchTab('wallet', this)">
+<span class="nav-icon">💎</span>
+<span>کیف پول</span>
+</div>
+<div class="nav-item" onclick="switchTab('spin', this)">
+<span class="nav-icon">🎰</span>
+<span>گردونه</span>
+</div>
+<div class="nav-item" onclick="switchTab('referral', this)">
+<span class="nav-icon">👥</span>
+<span>دعوت</span>
+</div>
+</div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+let userId = '123456';
 if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
 const user = tg.initDataUnsafe.user;
 document.getElementById('userInfo').innerText = `خوش آمدی ${user.first_name}!`;
+userId = user.id;
 }
+
+document.getElementById('refLink').innerText = `https://t.me/SiemenS_bot?start=${userId}`;
 
 let currentBalance = 0.00;
 
@@ -88,6 +163,27 @@ function claimDaily() {
 currentBalance += 1.00;
 document.getElementById('balance').innerText = currentBalance.toFixed(2) + ' $';
 alert('۱ تتر پاداش روزانه به حساب شما اضافه شد!');
+}
+
+function switchTab(tabName, element) {
+document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+
+document.getElementById(`tab-${tabName}`).classList.add('active');
+element.classList.add('active');
+}
+
+function copyRef() {
+const link = document.getElementById('refLink').innerText;
+navigator.clipboard.writeText(link);
+alert('لینک دعوت شما کپی شد!');
+}
+
+function spinWheel() {
+const reward = (Math.random() * 5).toFixed(2);
+currentBalance += parseFloat(reward);
+document.getElementById('balance').innerText = currentBalance.toFixed(2) + ' $';
+alert(`تبریک! شما ${reward} تتر برنده شدید!`);
 }
 </script>
 </body>
