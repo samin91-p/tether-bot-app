@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// تنظیمات کامل CORS برای اجازه به تلگرام و GitHub Pages
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -35,5 +34,5 @@ app.post('/api/claim', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(Server running on port ${PORT});
+    console.log('Server is running on port ' + PORT);
 });
