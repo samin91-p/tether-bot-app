@@ -87,8 +87,8 @@
       bottom: 15px;
       left: 50%;
       transform: translateX(-50%);
-      width: calc(100% - 30px);
-      max-width: 380px;
+      width: calc(100% - 20px);
+      max-width: 390px;
       background: #0f172a;
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
@@ -100,7 +100,7 @@
 
     .nav-item {
       color: var(--text-sub);
-      font-size: 11px;
+      font-size: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -142,6 +142,28 @@
       border: 1px dashed rgba(255, 255, 255, 0.3);
       font-family: monospace;
     }
+
+    /* استایل بازی جعبه شانس */
+    .boxes-container {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .game-box {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .game-box:active { transform: scale(0.9); }
   </style>
 </head>
 <body>
@@ -169,14 +191,23 @@
     </div>
   </div>
 
-  <!-- دعوت -->
-  <div id="tab-referral" class="tab-content">
+  <!-- بازی جدید -->
+  <div id="tab-game" class="tab-content">
     <div class="card">
-      <h3 style="margin-top: 0;">👥 دعوت از دوستان</h3>
-      <p style="font-size: 13px; color: var(--text-sub);">با دعوت از دوستان خود پاداش بگیرید!</p>
-      <div class="wallet-address" id="refLinkText">در حال ساخت لینک...</div>
-      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="shareRefLink()">🚀 ارسال لینک به دوستان در تلگرام</button>
-      <button class="btn btn-secondary" style="width: 100%;" onclick="copyRefLink()">📋 کپی کردن لینک دعوت</button>
+      <h3 style="margin-top: 0;">🎮 بازی جعبه شانس</h3>
+      <p style="font-size: 12px; color: var(--text-sub);">یکی از جعبه‌ها را انتخاب کن! اگر خوش‌شانس باشی <b>۰.۵ یورو</b> برنده می‌شوی.</p>
+      
+      <div class="notice-box" id="gameNotice">
+        🔒 بازی فقط برای حساب‌های با حداقل <b>۲۰ یورو</b> موجودی فعال است.
+      </div>
+
+      <div class="boxes-container">
+        <div class="game-box" onclick="playGame(1)">🎁</div>
+        <div class="game-box" onclick="playGame(2)">🎁</div>
+        <div class="game-box" onclick="playGame(3)">🎁</div>
+      </div>
+
+      <button class="btn btn-primary btn-locked" id="gameBtn" style="width: 100%;">🔒 قفل است</button>
     </div>
   </div>
 
@@ -192,11 +223,26 @@
     </div>
   </div>
 
+  <!-- دعوت -->
+  <div id="tab-referral" class="tab-content">
+    <div class="card">
+      <h3 style="margin-top: 0;">👥 دعوت از دوستان</h3>
+      <p style="font-size: 13px; color: var(--text-sub);">با دعوت از دوستان خود پاداش بگیرید!</p>
+      <div class="wallet-address" id="refLinkText">در حال ساخت لینک...</div>
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="shareRefLink()">🚀 ارسال لینک به دوستان در تلگرام</button>
+      <button class="btn btn-secondary" style="width: 100%;" onclick="copyRefLink()">📋 کپی کردن لینک دعوت</button>
+    </div>
+  </div>
+
   <!-- منو -->
   <div class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('wallet', this)">
       <span>💎</span>
       <span>کیف پول</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('game', this)">
+      <span>🎮</span>
+      <span>بازی</span>
     </div>
     <div class="nav-item" onclick="switchTab('spin', this)">
       <span>🎰</span>
@@ -246,13 +292,18 @@
 
       const claimBtn = document.getElementById('claimBtn');
       const spinBtn = document.getElementById('spinBtn');
+      const gameBtn = document.getElementById('gameBtn');
+
       const dailyNotice = document.getElementById('dailyNotice');
       const spinNotice = document.getElementById('spinNotice');
+      const gameNotice = document.getElementById('gameNotice');
 
       const today = new Date().toDateString();
       const lastClaim = localStorage.getItem('lastClaimDate');
       const lastSpin = localStorage.getItem('lastSpinDate');
+      const lastGame = localStorage.getItem('lastGameDate');
 
+      // تنظیم پاداش
       if (window.currentBalance < 20.00) {
         claimBtn.classList.add('btn-locked');
         claimBtn.innerText = '🔒 دریافت پاداش امروز';
@@ -267,6 +318,7 @@
         dailyNotice.style.display = 'none';
       }
 
+      // تنظیم گردونه
       if (window.currentBalance < 20.00) {
         spinBtn.classList.add('btn-locked');
         spinBtn.innerText = '🔒 چرخاندن گردونه';
@@ -280,6 +332,50 @@
         spinBtn.innerText = '🎰 چرخاندن گردونه';
         spinNotice.style.display = 'none';
       }
+
+      // تنظیم بازی
+      if (window.currentBalance < 20.00) {
+        gameBtn.classList.add('btn-locked');
+        gameBtn.innerText = '🔒 بازی قفل است';
+        gameNotice.style.display = 'block';
+      } else if (lastGame === today) {
+        gameBtn.classList.add('btn-locked');
+        gameBtn.innerText = '✅ بازی امروز انجام شد';
+        gameNotice.style.display = 'none';
+      } else {
+        gameBtn.classList.remove('btn-locked');
+        gameBtn.innerText = '🎯 یک جعبه را انتخاب کنید';
+        gameNotice.style.display = 'none';
+      }
+    }
+
+    function playGame(boxNumber) {
+      if (window.currentBalance < 20.00) {
+        alert('⚠️ برای انجام بازی، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
+        return;
+      }
+
+      const today = new Date().toDateString();
+      const lastGame = localStorage.getItem('lastGameDate');
+
+      if (lastGame === today) {
+        alert('⏳ شما امروز فرصت بازی خود را استفاده کرده‌اید! فردا دوباره شانس خود را امتحان کنید.');
+        return;
+      }
+
+      // شانس ۵۰ درصدی برنده شدن
+      const isWin = Math.random() > 0.4; 
+
+      localStorage.setItem('lastGameDate', today);
+
+      if (isWin) {
+        window.currentBalance += 0.50;
+        updateBalanceDisplay();
+        alert('🎉 تبریک! شما جعبه برنده را باز کردید و ۰.۵ یورو برنده شدید!');
+      } else {
+        updateBalanceDisplay();
+        alert('❌ متأسفانه این بار پوچ بود! فردا دوباره امتحان کنید.');
+      }
     }
 
     function claimDaily() {
@@ -292,7 +388,7 @@
       const lastClaim = localStorage.getItem('lastClaimDate');
 
       if (lastClaim === today) {
-        alert('⏳ شما امروز پاداش روزانه خود را دریافت کرده‌اید! لطفاً فردا دوباره مراجعه کنید.');
+        alert('⏳ شما امروز پاداش روزانه خود را دریافت کرده‌اید!');
         return;
       }
 
@@ -312,7 +408,7 @@
       const lastSpin = localStorage.getItem('lastSpinDate');
 
       if (lastSpin === today) {
-        alert('⏳ شما امروز شانس گردونه خود را امتحان کرده‌اید! لطفاً فردا دوباره سعی کنید.');
+        alert('⏳ شما امروز شانس گردونه خود را امتحان کرده‌اید!');
         return;
       }
 
@@ -347,9 +443,7 @@
     }
 
     function openDepositModal() { document.getElementById('depositModal').style.display = 'flex'; }
-    function openWithdrawModal() { 
-      alert('🔒 بخش برداشت به‌طور موقت غیرفعال است.'); 
-    }
+    function openWithdrawModal() { alert('🔒 بخش برداشت به‌طور موقت غیرفعال است.'); }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function copyWallet() {
