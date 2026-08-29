@@ -14,7 +14,7 @@
       --text-sub: #94a3b8;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; user-select: none; }
 
     body {
       background: var(--bg-gradient);
@@ -110,7 +110,6 @@
     }
     .nav-item.active { color: var(--accent-color); font-weight: bold; }
 
-    /* پنجره پیام شارژ/برداشت */
     .modal {
       display: none;
       position: fixed;
@@ -261,22 +260,38 @@
       const dailyNotice = document.getElementById('dailyNotice');
       const spinNotice = document.getElementById('spinNotice');
 
-      if (window.currentBalance >= 20.00) {
-        claimBtn.classList.remove('btn-locked');
-        claimBtn.innerText = '🎁 دریافت پاداش امروز';
-        dailyNotice.style.display = 'none';
+      const today = new Date().toDateString();
+      const lastClaim = localStorage.getItem('lastClaimDate');
+      const lastSpin = localStorage.getItem('lastSpinDate');
 
-        spinBtn.classList.remove('btn-locked');
-        spinBtn.innerText = '🎰 چرخاندن گردونه';
-        spinNotice.style.display = 'none';
-      } else {
+      // تنظیم دکمه دریافت پاداش
+      if (window.currentBalance < 20.00) {
         claimBtn.classList.add('btn-locked');
         claimBtn.innerText = '🔒 دریافت پاداش امروز';
         dailyNotice.style.display = 'block';
+      } else if (lastClaim === today) {
+        claimBtn.classList.add('btn-locked');
+        claimBtn.innerText = '✅ پاداش امروز دریافت شد';
+        dailyNotice.style.display = 'none';
+      } else {
+        claimBtn.classList.remove('btn-locked');
+        claimBtn.innerText = '🎁 دریافت پاداش امروز';
+        dailyNotice.style.display = 'none';
+      }
 
+      // تنظیم دکمه گردونه
+      if (window.currentBalance < 20.00) {
         spinBtn.classList.add('btn-locked');
         spinBtn.innerText = '🔒 چرخاندن گردونه';
         spinNotice.style.display = 'block';
+      } else if (lastSpin === today) {
+        spinBtn.classList.add('btn-locked');
+        spinBtn.innerText = '✅ فرصت امروز استفاده شد';
+        spinNotice.style.display = 'none';
+      } else {
+        spinBtn.classList.remove('btn-locked');
+        spinBtn.innerText = '🎰 چرخاندن گردونه';
+        spinNotice.style.display = 'none';
       }
     }
 
@@ -285,9 +300,19 @@
         alert('⚠️ برای دریافت پاداش، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
         return;
       }
+
+      const today = new Date().toDateString();
+      const lastClaim = localStorage.getItem('lastClaimDate');
+
+      if (lastClaim === today) {
+        alert('⏳ شما امروز پاداش روزانه خود را دریافت کرده‌اید! لطفاً فردا دوباره مراجعه کنید.');
+        return;
+      }
+
       window.currentBalance += 1.00;
+      localStorage.setItem('lastClaimDate', today);
       updateBalanceDisplay();
-      alert('🎉 ۱ یورو پاداش روزانه اضافه شد!');
+      alert('🎉 ۱ یورو پاداش روزانه با موفقیت دریافت شد!');
     }
 
     function spinWheel() {
@@ -295,10 +320,20 @@
         alert('⚠️ برای چرخاندن گردونه، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
         return;
       }
-      const reward = parseFloat((Math.random() * 5).toFixed(2));
+
+      const today = new Date().toDateString();
+      const lastSpin = localStorage.getItem('lastSpinDate');
+
+      if (lastSpin === today) {
+        alert('⏳ شما امروز شانس گردونه خود را امتحان کرده‌اید! لطفاً فردا دوباره سعی کنید.');
+        return;
+      }
+
+      const reward = parseFloat((Math.random() * 4 + 1).toFixed(2)); // بین ۱ تا ۵ یورو
       window.currentBalance += reward;
+      localStorage.setItem('lastSpinDate', today);
       updateBalanceDisplay();
-      alert('🎉 شما ' + reward + ' یورو برنده شدید!');
+      alert('🎉 تبریک! شما ' + reward + ' یورو برنده شدید!');
     }
 
     function switchTab(tabName, element) {
