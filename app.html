@@ -64,7 +64,7 @@
       border: none;
       border-radius: 16px;
       font-weight: bold;
-      font-size: 15px;
+      font-size: 14px;
       cursor: pointer;
     }
 
@@ -143,7 +143,6 @@
       font-family: monospace;
     }
 
-    /* استایل بازی جعبه شانس */
     .boxes-container {
       display: flex;
       justify-content: center;
@@ -173,32 +172,36 @@
   <!-- کیف پول -->
   <div id="tab-wallet" class="tab-content active">
     <div class="card">
-      <div style="font-size: 13px; color: var(--text-sub);">موجودی کل (USDT / EUR)</div>
-      <div class="balance-amount" id="balance">0.00 €</div>
+      <div style="font-size: 13px; color: var(--text-sub);">موجودی کل (USDT)</div>
+      <div class="balance-amount" id="balance">0.00 USDT</div>
     </div>
 
     <div class="btn-group">
       <button class="btn btn-primary" onclick="openDepositModal()">📥 واریز</button>
-      <button class="btn btn-locked" onclick="openWithdrawModal()">🔒 برداشت</button>
+      <button class="btn btn-secondary btn-locked" id="withdrawBtn" onclick="openWithdrawModal()">🔒 برداشت</button>
+    </div>
+
+    <div class="notice-box" id="withdrawNotice" style="font-size: 11px;">
+      ℹ️ برداشت اصل سرمایه (تا ۸۰٪) ۵ روز پس از اولین واریز فعال می‌شود.
     </div>
 
     <div class="card">
       <h3 style="margin-top: 0;">🎁 پاداش روزانه</h3>
       <div class="notice-box" id="dailyNotice">
-        🔒 پاداش روزانه فقط برای حساب‌هایی که حداقل <b>۲۰ یورو</b> موجودی دارند فعال است.
+        🔒 پاداش روزانه فقط برای حساب‌هایی که حداقل <b>۲۰ USDT</b> موجودی دارند فعال است.
       </div>
       <button class="btn btn-primary btn-locked" id="claimBtn" style="width: 100%;" onclick="claimDaily()">🔒 دریافت پاداش امروز</button>
     </div>
   </div>
 
-  <!-- بازی جدید -->
+  <!-- بازی -->
   <div id="tab-game" class="tab-content">
     <div class="card">
       <h3 style="margin-top: 0;">🎮 بازی جعبه شانس</h3>
-      <p style="font-size: 12px; color: var(--text-sub);">یکی از جعبه‌ها را انتخاب کن! اگر خوش‌شانس باشی <b>۰.۵ یورو</b> برنده می‌شوی.</p>
+      <p style="font-size: 12px; color: var(--text-sub);">یکی از جعبه‌ها را انتخاب کن! اگر خوش‌شانس باشی <b>۰.۵ USDT</b> برنده می‌شوی.</p>
       
       <div class="notice-box" id="gameNotice">
-        🔒 بازی فقط برای حساب‌های با حداقل <b>۲۰ یورو</b> موجودی فعال است.
+        🔒 بازی فقط برای حساب‌های با حداقل <b>۲۰ USDT</b> موجودی فعال است.
       </div>
 
       <div class="boxes-container">
@@ -217,7 +220,7 @@
       <h3 style="margin-top: 0;">🎰 گردونه شانس</h3>
       <div style="font-size: 60px; margin: 20px 0;">🎰</div>
       <div class="notice-box" id="spinNotice">
-        🔒 گردونه شانس فقط برای حساب‌های با حداقل <b>۲۰ یورو</b> موجودی فعال است.
+        🔒 گردونه شانس فقط برای حساب‌های با حداقل <b>۲۰ USDT</b> موجودی فعال است.
       </div>
       <button class="btn btn-primary btn-locked" id="spinBtn" style="width: 100%;" onclick="spinWheel()">🔒 چرخاندن گردونه</button>
     </div>
@@ -265,6 +268,22 @@
     </div>
   </div>
 
+  <!-- مودال برداشت -->
+  <div class="modal" id="withdrawModal">
+    <div class="modal-content">
+      <h3 style="margin-top:0;">📤 برداشت اصل سرمایه</h3>
+      <div class="notice-box" style="margin-bottom: 12px;">
+        ⚠️ طبق قوانین، حداکثر <b>۸۰٪ سرمایه اولیه</b> قابل برداشت است.<br>
+        حد مجاز برداشت شما: <b id="maxWithdrawAmount">0.00</b> USDT
+      </div>
+      <p style="font-size: 12px; color: var(--text-sub);">آدرس ولت BEP20 و مبلغ درخواست را وارد کنید:</p>
+      <input type="number" placeholder="مبلغ (USDT)" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: #fff; margin-bottom: 10px;" id="withdrawAmount">
+      <input type="text" placeholder="آدرس ولت 0x..." style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: #0f172a; color: #fff; margin-bottom: 15px;" id="withdrawAddr">
+      <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="submitWithdraw()">ثبت درخواست برداشت</button>
+      <button class="btn btn-secondary" style="width: 100%;" onclick="closeModal('withdrawModal')">انصراف</button>
+    </div>
+  </div>
+
   <script>
     window.onload = function() {
       if (window.Telegram && window.Telegram.WebApp) {
@@ -287,23 +306,55 @@
     };
 
     function updateBalanceDisplay() {
-      document.getElementById('balance').innerText = window.currentBalance.toFixed(2) + ' €';
+      document.getElementById('balance').innerText = window.currentBalance.toFixed(2) + ' USDT';
       localStorage.setItem('balance', window.currentBalance);
 
       const claimBtn = document.getElementById('claimBtn');
       const spinBtn = document.getElementById('spinBtn');
       const gameBtn = document.getElementById('gameBtn');
+      const withdrawBtn = document.getElementById('withdrawBtn');
 
       const dailyNotice = document.getElementById('dailyNotice');
       const spinNotice = document.getElementById('spinNotice');
       const gameNotice = document.getElementById('gameNotice');
+      const withdrawNotice = document.getElementById('withdrawNotice');
 
       const today = new Date().toDateString();
       const lastClaim = localStorage.getItem('lastClaimDate');
       const lastSpin = localStorage.getItem('lastSpinDate');
       const lastGame = localStorage.getItem('lastGameDate');
 
-      // تنظیم پاداش
+      // ثبت اولین واریز بالای ۲۰ تتر
+      if (window.currentBalance >= 20.00 && !localStorage.getItem('firstDepositDate')) {
+        localStorage.setItem('firstDepositDate', new Date().getTime());
+      }
+
+      // محاسبه روزهای گذشته
+      const firstDepositDate = localStorage.getItem('firstDepositDate');
+      let daysPassed = 0;
+      if (firstDepositDate) {
+        const diffTime = Math.abs(new Date().getTime() - parseInt(firstDepositDate));
+        daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      }
+
+      // تنظیم دکمه برداشت (تا ۸۰ درصد)
+      if (window.currentBalance < 20.00) {
+        withdrawBtn.classList.add('btn-locked');
+        withdrawBtn.innerText = '🔒 برداشت';
+        withdrawNotice.innerText = 'ℹ️ برداشت اصل سرمایه (تا ۸۰٪) نیازمند حداقل ۲۰ USDT موجودی است.';
+      } else if (daysPassed < 5) {
+        const daysLeft = 5 - daysPassed;
+        withdrawBtn.classList.add('btn-locked');
+        withdrawBtn.innerText = '🔒 برداشت (' + daysLeft + ' روز مانده)';
+        withdrawNotice.innerText = '⏳ امکان برداشت ۸۰٪ سرمایه ' + daysLeft + ' روز دیگر فعال می‌شود.';
+      } else {
+        withdrawBtn.classList.remove('btn-locked');
+        withdrawBtn.classList.add('btn-primary');
+        withdrawBtn.innerText = '📤 برداشت اصل سرمایه (۸۰٪)';
+        withdrawNotice.innerText = '✅ شرط ۵ روز سپری شده است. می‌توانید تا ۸۰٪ سرمایه خود را برداشت کنید.';
+      }
+
+      // تنظیم دکمه‌های پاداش، گردونه و بازی
       if (window.currentBalance < 20.00) {
         claimBtn.classList.add('btn-locked');
         claimBtn.innerText = '🔒 دریافت پاداش امروز';
@@ -318,7 +369,6 @@
         dailyNotice.style.display = 'none';
       }
 
-      // تنظیم گردونه
       if (window.currentBalance < 20.00) {
         spinBtn.classList.add('btn-locked');
         spinBtn.innerText = '🔒 چرخاندن گردونه';
@@ -333,7 +383,6 @@
         spinNotice.style.display = 'none';
       }
 
-      // تنظیم بازی
       if (window.currentBalance < 20.00) {
         gameBtn.classList.add('btn-locked');
         gameBtn.innerText = '🔒 بازی قفل است';
@@ -349,9 +398,61 @@
       }
     }
 
+    function openWithdrawModal() {
+      const firstDepositDate = localStorage.getItem('firstDepositDate');
+      let daysPassed = 0;
+      if (firstDepositDate) {
+        const diffTime = Math.abs(new Date().getTime() - parseInt(firstDepositDate));
+        daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      }
+
+      if (window.currentBalance < 20.00) {
+        alert('⚠️ برای امکان برداشت، ابتدا باید حساب خود را حداقل ۲۰ USDT شارژ کنید.');
+        return;
+      }
+
+      if (daysPassed < 5) {
+        const daysLeft = 5 - daysPassed;
+        alert('🔒 امکان برداشت اصل سرمایه ۵ روز پس از اولین واریز فعال می‌شود. (' + daysLeft + ' روز باقی‌مانده)');
+        return;
+      }
+
+      // محاسبه حد مجاز برداشت (۸۰٪)
+      const maxAllowed = (window.currentBalance * 0.8).toFixed(2);
+      document.getElementById('maxWithdrawAmount').innerText = maxAllowed;
+      document.getElementById('withdrawModal').style.display = 'flex';
+    }
+
+    function submitWithdraw() {
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+      const addr = document.getElementById('withdrawAddr').value;
+      const maxAllowed = window.currentBalance * 0.8;
+
+      if (!amount || amount <= 0) {
+        alert('لطفاً مبلغ معتبری را وارد کنید.');
+        return;
+      }
+
+      if (amount > maxAllowed) {
+        alert('⚠️ شما حداکثر می‌توانید ' + maxAllowed.toFixed(2) + ' USDT (۸۰٪ سرمایه) برداشت کنید.');
+        return;
+      }
+
+      if (!addr) {
+        alert('لطفاً آدرس ولت را وارد کنید.');
+        return;
+      }
+
+      window.currentBalance -= amount;
+      updateBalanceDisplay();
+
+      alert('درخواست برداشت مبلغ ' + amount + ' USDT با موفقیت ثبت شد و پس از بررسی واریز خواهد شد.');
+      closeModal('withdrawModal');
+    }
+
     function playGame(boxNumber) {
       if (window.currentBalance < 20.00) {
-        alert('⚠️ برای انجام بازی، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
+        alert('⚠️ برای انجام بازی، ابتدا باید حداقل ۲۰ USDT حساب خود را شارژ کنید.');
         return;
       }
 
@@ -359,19 +460,17 @@
       const lastGame = localStorage.getItem('lastGameDate');
 
       if (lastGame === today) {
-        alert('⏳ شما امروز فرصت بازی خود را استفاده کرده‌اید! فردا دوباره شانس خود را امتحان کنید.');
+        alert('⏳ شما امروز فرصت بازی خود را استفاده کرده‌اید!');
         return;
       }
 
-      // شانس ۵۰ درصدی برنده شدن
       const isWin = Math.random() > 0.4; 
-
       localStorage.setItem('lastGameDate', today);
 
       if (isWin) {
         window.currentBalance += 0.50;
         updateBalanceDisplay();
-        alert('🎉 تبریک! شما جعبه برنده را باز کردید و ۰.۵ یورو برنده شدید!');
+        alert('🎉 تبریک! شما جعبه برنده را باز کردید و ۰.۵ USDT برنده شدید!');
       } else {
         updateBalanceDisplay();
         alert('❌ متأسفانه این بار پوچ بود! فردا دوباره امتحان کنید.');
@@ -380,7 +479,7 @@
 
     function claimDaily() {
       if (window.currentBalance < 20.00) {
-        alert('⚠️ برای دریافت پاداش، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
+        alert('⚠️ برای دریافت پاداش، ابتدا باید حداقل ۲۰ USDT حساب خود را شارژ کنید.');
         return;
       }
 
@@ -395,12 +494,12 @@
       window.currentBalance += 1.00;
       localStorage.setItem('lastClaimDate', today);
       updateBalanceDisplay();
-      alert('🎉 ۱ یورو پاداش روزانه با موفقیت دریافت شد!');
+      alert('🎉 ۱ USDT پاداش روزانه با موفقیت دریافت شد!');
     }
 
     function spinWheel() {
       if (window.currentBalance < 20.00) {
-        alert('⚠️ برای چرخاندن گردونه، ابتدا باید حداقل ۲۰ یورو حساب خود را شارژ کنید.');
+        alert('⚠️ برای چرخاندن گردونه، ابتدا باید حداقل ۲۰ USDT حساب خود را شارژ کنید.');
         return;
       }
 
@@ -416,7 +515,7 @@
       window.currentBalance += reward;
       localStorage.setItem('lastSpinDate', today);
       updateBalanceDisplay();
-      alert('🎉 تبریک! شما ' + reward + ' یورو برنده شدید!');
+      alert('🎉 تبریک! شما ' + reward + ' USDT برنده شدید!');
     }
 
     function switchTab(tabName, element) {
@@ -428,7 +527,7 @@
     }
 
     function shareRefLink() {
-      const shareText = 'سلام! به برنامه زیمنس بپیوندید و پاداش یورویی بگیرید 🎁:';
+      const shareText = 'سلام! به برنامه زیمنس بپیوندید و پاداش تتر بگیرید 🎁:';
       const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(window.myRefLink) + '&text=' + encodeURIComponent(shareText);
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.openTelegramLink(shareUrl);
@@ -443,7 +542,6 @@
     }
 
     function openDepositModal() { document.getElementById('depositModal').style.display = 'flex'; }
-    function openWithdrawModal() { alert('🔒 بخش برداشت به‌طور موقت غیرفعال است.'); }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function copyWallet() {
@@ -453,4 +551,4 @@
     }
   </script>
 </body>
-</html>
+</html
