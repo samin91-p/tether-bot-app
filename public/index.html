@@ -43,7 +43,6 @@
     </div>
 
     <script>
-        // آماده‌سازی تلگرام
         let userId = '6559439220';
         try {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -53,17 +52,12 @@
                     userId = window.Telegram.WebApp.initDataUnsafe.user.id;
                 }
             }
-        } catch (e) {
-            console.log(e);
-        }
+        } catch (e) {}
 
-        // نمایش لینک دعوت
         document.getElementById('refLink').innerText = https://t.me/SiemenS_bot?start=${userId};
 
-        // مقداردهی اولیه موجودی
         let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
         let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
-        
         document.getElementById('balance').innerText = balance.toFixed(2);
 
         function updateUI() {
@@ -75,7 +69,6 @@
             if (now - lastClaim < COOLDOWN) {
                 btn.disabled = true;
                 btn.innerText = 'دریافت شد';
-                
                 const diff = COOLDOWN - (now - lastClaim);
                 const hours = Math.floor(diff / (1000 * 60 * 60));
                 const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -91,7 +84,6 @@
         function claimReward() {
             const now = Date.now();
             const COOLDOWN = 24 * 60 * 60 * 1000;
-            
             if (now - lastClaim >= COOLDOWN) {
                 balance += 1.0;
                 lastClaim = now;
