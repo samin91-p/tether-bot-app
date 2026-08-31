@@ -39,34 +39,41 @@
     </div>
 
     <script>
+        // آدرس دقیق Render خود را در خط زیر جایگزین کنید (بدون اسلش / در آخُر)
+        const SERVER_URL = "https://tether-bot-app.onrender.com"; 
+
         const tg = window.Telegram?.WebApp;
         if(tg) { tg.ready(); tg.expand(); }
         
         const userId = String(tg?.initDataUnsafe?.user?.id || '123456');
-        const botUsername = "SiemenS_bot"; // نام کاربری ربات خود را دقیق بنویسید
+        const botUsername = "SiemenS_bot"; 
         const startParam = tg?.initDataUnsafe?.start_param || '';
 
         let timerInterval = null;
 
         function loadData() {
-            fetch(/api/user/${userId}?ref=${startParam})
+            fetch(${SERVER_URL}/api/user/${userId}?ref=${startParam})
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('balance').innerText = Number(data.balance).toFixed(2);
+                    document.getElementById('balance').innerText = Number(data.balance || 0).toFixed(2);
                     document.getElementById('refCount').innerText = data.referrals || 0;
                     document.getElementById('refLink').innerText = https://t.me/${botUsername}?start=${userId};
                     document.getElementById('status').innerText = 'متصل شد';
 
-                    checkTimer(data.lastClaim);
+                    checkTimer(data.lastClaim || 0);
+                })
+                .catch(err => {
+                    document.getElementById('status').innerText = 'خطا در اتصال به سرور';
+                    document.getElementById('status').style.color = '#ff5252';
                 });
         }
 
         function checkTimer(lastClaim) {
             const COOLDOWN = 24 * 60 * 60 * 1000;
             const now = Date.now();
-            const timePassed = now - (lastClaim || 0);
+            const timePassed = now - lastClaim;
 
-            if (timePassed < COOLDOWN) {
+            if (lastClaim > 0 && timePassed < COOLDOWN) {
                 startCountdown(COOLDOWN - timePassed);
             } else {
                 enableButton();
@@ -102,7 +109,7 @@
         }
 
         function claimReward() {
-            fetch('/api/claim', {
+            fetch(${SERVER_URL}/api/claim, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: userId })
@@ -115,7 +122,8 @@
                 } else {
                     alert(data.message);
                 }
-            });
+            })
+            .catch(err => alert('خطا در برقراری ارتباط با سرور'));
         }
 
         loadData();
