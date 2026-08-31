@@ -18,7 +18,7 @@ app.post('/api/create-invoice', (req, res) => {
         const amountToPay = (parseFloat(baseAmount || 20) + randomCents).toFixed(2);
         
         // آدرس ولت ثابت شما (می‌توانید آدرس خودتان را اینجا بگذارید)
-        const walletAddress = "0xYourWalletAddressHereOrTronAddress";
+        const walletAddress = "0xDdaE2e4e81A39C4E68faFAfd8b6aa05192f7A123";
 
         res.json({
             success: true,
