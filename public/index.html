@@ -54,7 +54,7 @@
 
         <div class="action-btns">
             <button class="btn-action btn-withdraw" id="withdrawBtn" onclick="handleWithdrawClick()">🔒 قفل برداشت</button>
-            <button class="btn-action btn-deposit" onclick="openModal('depositModal')">📩 واریز</button>
+            <button class="btn-action btn-deposit" id="depositBtn" onclick="openModal('depositModal')">📩 واریز</button>
         </div>
 
         <div class="alert-box" id="lockNotice">
@@ -114,11 +114,11 @@
 
     <!-- منو -->
     <div class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('wallet', this)">
+        <div class="nav-item active" id="nav-wallet" onclick="switchTab('wallet')">
             <span class="nav-icon">💎</span>
             <span>کیف پول</span>
         </div>
-        <div class="nav-item" onclick="switchTab('invite', this)">
+        <div class="nav-item" id="nav-invite" onclick="switchTab('invite')">
             <span class="nav-icon">👥</span>
             <span>دعوت</span>
         </div>
@@ -140,22 +140,34 @@
         let timerInterval = null;
         let withdrawTimerInterval = null;
 
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function openModal(id) { 
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'flex'; 
+        }
+        
+        function closeModal(id) { 
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none'; 
+        }
         
         function copyAddress() {
             const addr = document.getElementById('walletAddress').innerText;
-            navigator.clipboard.writeText(addr);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(addr);
+            }
             if (tg?.showAlert) tg.showAlert('آدرس ولت BEP20 کپی شد!');
             else alert('آدرس ولت BEP20 کپی شد!');
         }
 
-        function switchTab(tabName, el) {
+        function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             
-            document.getElementById('tab-' + tabName).classList.add('active');
-            el.classList.add('active');
+            const targetTab = document.getElementById('tab-' + tabName);
+            const targetNav = document.getElementById('nav-' + tabName);
+            
+            if (targetTab) targetTab.classList.add('active');
+            if (targetNav) targetNav.classList.add('active');
         }
 
         let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
@@ -247,7 +259,6 @@
                 return;
             }
 
-            // کسر ۵۰ درصد از موجودی هنگام درخواست برداشت
             const withdrawAmount = balance * 0.5;
             balance = balance - withdrawAmount;
             
