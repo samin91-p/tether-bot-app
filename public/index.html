@@ -85,7 +85,6 @@
             <p style="font-size: 12px; color: #8a92b2; margin-bottom: 10px;">آدرس زیر را کپی کرده و حداقل ۲۰ تتر روی شبکه BSC واریز کنید:</p>
             <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
             <button class="btn-claim" style="margin-top: 15px;" onclick="copyAddress()">کپی آدرس ولت</button>
-            <button class="btn-claim" style="margin-top: 10px; background: #00c853; color: #000;" onclick="simulateDeposit()">تست شارژ ۲۰ تتر</button>
         </div>
     </div>
 
@@ -161,20 +160,6 @@
         let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
         let totalDeposited = parseFloat(localStorage.getItem('total_deposited') || '0.00');
         let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
-
-        function simulateDeposit() {
-            totalDeposited += 20.0;
-            balance += 20.0;
-            localStorage.setItem('total_deposited', totalDeposited);
-            localStorage.setItem('user_balance', balance);
-            document.getElementById('balance').innerText = balance.toFixed(2);
-            closeModal('depositModal');
-            if (tg && tg.showAlert) {
-                tg.showAlert('مبلغ ۲۰ تتر شارژ شد!');
-            } else {
-                alert('مبلغ ۲۰ تتر شارژ شد!');
-            }
-        }
 
         function loadData() {
             document.getElementById('balance').innerText = balance.toFixed(2);
