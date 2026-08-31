@@ -27,7 +27,7 @@
         .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 12px; cursor: pointer; width: 50%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 12px; cursor: pointer; width: 33%; }
         .nav-item.active { color: #00e676; }
         .nav-icon { font-size: 20px; }
 
@@ -39,6 +39,11 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #181b3a; border-radius: 20px; padding: 25px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #2d3361; position: relative; }
         .close-btn { position: absolute; top: 10px; left: 15px; font-size: 20px; cursor: pointer; color: #8a92b2; }
+
+        /* استایل گردونه شانس */
+        .wheel-box { position: relative; width: 170px; height: 170px; margin: 15px auto; display: flex; align-items: center; justify-content: center; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #00e676; background: conic-gradient(#1c2040 0deg 72deg, #00c853 72deg 144deg, #1c2040 144deg 216deg, #00c853 216deg 288deg, #1c2040 288deg 360deg); transition: transform 3s cubic-bezier(0.15, 0.99, 0.18, 1); }
+        .wheel-pointer { position: absolute; top: -12px; font-size: 22px; z-index: 10; }
     </style>
 </head>
 <body>
@@ -67,6 +72,22 @@
         </div>
     </div>
 
+    <!-- گردونه شانس -->
+    <div id="tab-spin" class="tab-content">
+        <div class="card">
+            <div class="reward-title">🎰 گردونه شانس</div>
+            <div class="reward-sub">شانس برنده شدن ۱ تا ۵ USDT (نیازمند ۲۰ USDT واریزی)</div>
+            
+            <div class="wheel-box">
+                <div class="wheel-pointer">🔻</div>
+                <div class="wheel" id="wheel"></div>
+            </div>
+
+            <button class="btn-claim" id="spinBtn" onclick="spinWheel()">چرخاندن گردونه</button>
+            <div id="spinResult" style="margin-top: 15px; font-size: 14px; font-weight: bold; color: #00e676;"></div>
+        </div>
+    </div>
+
     <!-- دعوت -->
     <div id="tab-invite" class="tab-content">
         <div class="card">
@@ -92,8 +113,8 @@
     <div id="depositRequiredModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('depositRequiredModal')">&times;</span>
-            <h3 style="color: #ffb74d; margin-bottom: 10px;">⚠️ عدم فعال‌سازی پاداش</h3>
-            <p style="font-size: 13px; color: #8a92b2; margin-bottom: 15px;">برای فعال‌سازی پاداش روزانه، ابتدا باید حداقل <b>۲۰ USDT</b> به حساب خود واریز کنید.</p>
+            <h3 style="color: #ffb74d; margin-bottom: 10px;">⚠️ عدم فعال‌سازی</h3>
+            <p style="font-size: 13px; color: #8a92b2; margin-bottom: 15px;">برای استفاده از این بخش، ابتدا باید حداقل <b>۲۰ USDT</b> به حساب خود واریز کنید.</p>
             <button class="btn-claim" style="background: linear-gradient(135deg, #00c853, #00e676); color: #000;" onclick="closeModal('depositRequiredModal'); openModal('depositModal');">ورود به بخش واریز</button>
         </div>
     </div>
@@ -112,6 +133,10 @@
         <div class="nav-item active" onclick="switchTab('wallet', this)">
             <span class="nav-icon">💎</span>
             <span>کیف پول</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('spin', this)">
+            <span class="nav-icon">🎰</span>
+            <span>گردونه</span>
         </div>
         <div class="nav-item" onclick="switchTab('invite', this)">
             <span class="nav-icon">👥</span>
@@ -135,6 +160,7 @@
 
         const botUsername = "SiemenS_bot"; 
         let timerInterval = null;
+        let isSpinning = false;
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -160,6 +186,8 @@
         let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
         let totalDeposited = parseFloat(localStorage.getItem('total_deposited') || '0.00');
         let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
+        let lastSpin = parseInt(localStorage.getItem('last_spin') || '0');
+        let currentRotation = 0;
 
         function loadData() {
             document.getElementById('balance').innerText = balance.toFixed(2);
@@ -167,6 +195,7 @@
             document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
 
             checkTimer();
+            checkSpinTimer();
         }
 
         function checkTimer() {
@@ -178,6 +207,21 @@
                 startCountdown(COOLDOWN - timePassed);
             } else {
                 enableButton();
+            }
+        }
+
+        function checkSpinTimer() {
+            const COOLDOWN = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            const timePassed = now - lastSpin;
+            const spinBtn = document.getElementById('spinBtn');
+
+            if (lastSpin > 0 && timePassed < COOLDOWN) {
+                spinBtn.disabled = true;
+                spinBtn.innerText = '✅ امروز چرخانده شد';
+            } else {
+                spinBtn.disabled = false;
+                spinBtn.innerText = 'چرخاندن گردونه';
             }
         }
 
@@ -231,6 +275,44 @@
                     tg.showAlert('۱ USDT با موفقیت به موجودی شما اضافه شد!');
                 }
             }
+        }
+
+        function spinWheel() {
+            if (totalDeposited < 20.0) {
+                openModal('depositRequiredModal');
+                return;
+            }
+
+            if (isSpinning) return;
+
+            const COOLDOWN = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+
+            if (lastSpin > 0 && (now - lastSpin < COOLDOWN)) {
+                if (tg && tg.showAlert) tg.showAlert('امروز گردونه را چرخانده‌اید!');
+                return;
+            }
+
+            isSpinning = true;
+            const wheel = document.getElementById('wheel');
+            
+            currentRotation += 1440 + Math.floor(Math.random() * 360);
+            wheel.style.transform = rotate(${currentRotation}deg);
+
+            setTimeout(() => {
+                const reward = Math.floor(Math.random() * 5) + 1;
+                balance += reward;
+                lastSpin = Date.now();
+
+                localStorage.setItem('user_balance', balance);
+                localStorage.setItem('last_spin', lastSpin);
+
+                document.getElementById('balance').innerText = balance.toFixed(2);
+                document.getElementById('spinResult').innerText = 🎉 شما ${reward} USDT برنده شدید!;
+                
+                checkSpinTimer();
+                isSpinning = false;
+            }, 3000);
         }
 
         loadData();
