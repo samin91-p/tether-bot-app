@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SiemenS Mini-App</title>
+    <!-- کتابخانه رسمی تلگرام -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; touch-action: manipulation; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0f1026; color: #fff; margin: 0; padding: 20px 15px 90px 15px; display: flex; flex-direction: column; align-items: center; user-select: none; }
         
         .card { background: linear-gradient(145deg, #181b3a, #131530); border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05); }
@@ -26,8 +27,8 @@
         .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 14px; border-radius: 14px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
         
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 11px; cursor: pointer; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; z-index: 999; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 11px; cursor: pointer; width: 25%; text-align: center; }
         .nav-item.active { color: #00e676; }
         .nav-icon { font-size: 18px; }
 
@@ -36,16 +37,15 @@
 
         .ref-box { background: #0b0c1e; padding: 12px; border-radius: 10px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 10px; user-select: all; }
 
-        /* Modal styling */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        /* پاپ‌آپ‌ها */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 10000; }
         .modal-content { background: #181b3a; border-radius: 20px; padding: 25px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #2d3361; position: relative; }
-        .close-btn { position: absolute; top: 10px; left: 15px; font-size: 24px; cursor: pointer; color: #8a92b2; }
+        .close-btn { position: absolute; top: 10px; left: 15px; font-size: 24px; cursor: pointer; color: #8a92b2; padding: 5px; }
 
-        /* Wheel styling */
-        .wheel-container { position: relative; width: 220px; height: 220px; margin: 20px auto; }
-        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #ffb74d; z-index: 10; }
+        /* گردونه */
+        .wheel-container { position: relative; width: 200px; height: 200px; margin: 15px auto; }
+        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid #ffb74d; z-index: 10; }
         .wheel-board { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #00e676; background: conic-gradient(#1f244d 0deg 60deg, #161938 60deg 120deg, #1f244d 120deg 180deg, #161938 180deg 240deg, #1f244d 240deg 300deg, #161938 300deg 360deg); transition: transform 4s cubic-bezier(0.15, 0.99, 0.18, 1); position: relative; }
-        .wheel-num { position: absolute; width: 100%; height: 100%; text-align: center; font-size: 12px; font-weight: bold; color: #00e676; padding-top: 10px; }
     </style>
 </head>
 <body>
@@ -58,8 +58,8 @@
         </div>
 
         <div class="action-btns">
-            <button class="btn-action btn-withdraw" onclick="openModal('withdrawModal')">🔒 برداشت (5 روز مانده)</button>
-            <button class="btn-action btn-deposit" onclick="openModal('depositModal')">📩 واریز</button>
+            <button class="btn-action btn-withdraw" id="btn-withdraw">🔒 برداشت (5 روز مانده)</button>
+            <button class="btn-action btn-deposit" id="btn-deposit">📩 واریز</button>
         </div>
 
         <div class="alert-box">
@@ -69,8 +69,7 @@
         <div class="card">
             <div class="reward-title">🎁 پاداش روزانه</div>
             <div class="reward-sub">هر ۲۴ ساعت یک‌بار ۱ USDT دریافت کنید!</div>
-            <button class="btn-claim" id="claimBtn" onclick="claimDaily()">دریافت پاداش</button>
-            <div id="timer" style="margin-top: 10px; font-size: 13px; color: #ffb74d;"></div>
+            <button class="btn-claim" id="claimBtn">دریافت پاداش</button>
         </div>
     </div>
 
@@ -78,22 +77,14 @@
     <div id="tab-spin" class="tab-content">
         <div class="card">
             <div class="reward-title">🎰 گردونه شانس</div>
-            <div class="reward-sub">هر ۲۴ ساعت شانس خود را برای دریافت تا ۵ USDT امتحان کنید!</div>
+            <div class="reward-sub">هر ۲۴ ساعت شانس خود را امتحان کنید!</div>
             
             <div class="wheel-container">
                 <div class="wheel-pointer"></div>
-                <div class="wheel-board" id="wheelCircle">
-                    <div class="wheel-num" style="transform: rotate(30deg);">0.1 USDT</div>
-                    <div class="wheel-num" style="transform: rotate(90deg);">0.25 USDT</div>
-                    <div class="wheel-num" style="transform: rotate(150deg);">0.5 USDT</div>
-                    <div class="wheel-num" style="transform: rotate(210deg);">1 USDT</div>
-                    <div class="wheel-num" style="transform: rotate(270deg);">2 USDT</div>
-                    <div class="wheel-num" style="transform: rotate(330deg);">5 USDT</div>
-                </div>
+                <div class="wheel-board" id="wheelCircle"></div>
             </div>
 
-            <button class="btn-claim" id="spinBtn" onclick="spinWheel()">چرخاندن گردونه</button>
-            <div id="spinTimer" style="margin-top: 10px; font-size: 13px; color: #ffb74d;"></div>
+            <button class="btn-claim" id="spinBtn">چرخاندن گردونه</button>
         </div>
     </div>
 
@@ -111,25 +102,25 @@
             <div class="reward-title">👥 دعوت از دوستان</div>
             <div class="reward-sub">با دعوت هر دوست ۰.۵ USDT پاداش بگیرید</div>
             <div style="margin: 15px 0; font-size: 16px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
-            <div class="ref-box" id="refLink">در حال بارگذاری...</div>
+            <div class="ref-box" id="refLink">https://t.me/SiemenS_bot</div>
         </div>
     </div>
 
     <!-- پاپ‌آپ واریز -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('depositModal')">&times;</span>
+            <span class="close-btn" id="closeDeposit">&times;</span>
             <h3 style="color: #00e676; margin-top:0;">واریز USDT (BEP20)</h3>
-            <p style="font-size: 12px; color: #8a92b2;">آدرس زیر را کپی کرده و روی شبکه BSC واریز کنید:</p>
+            <p style="font-size: 12px; color: #8a92b2;">آدرس زیر را کپی کرده و واریز کنید:</p>
             <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
-            <button class="btn-claim" style="margin-top: 15px;" onclick="copyAddress()">کپی آدرس ولت</button>
+            <button class="btn-claim" style="margin-top: 15px;" id="copyBtn">کپی آدرس ولت</button>
         </div>
     </div>
 
     <!-- پاپ‌آپ برداشت -->
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('withdrawModal')">&times;</span>
+            <span class="close-btn" id="closeWithdraw">&times;</span>
             <h3 style="color: #ffb74d; margin-top:0;">بخش برداشت</h3>
             <p style="font-size: 13px; color: #8a92b2;">امکان برداشت در حال حاضر قفل است.<br>لطفاً تا پایان زمان قفل ۵ روزه صبر کنید.</p>
         </div>
@@ -137,104 +128,104 @@
 
     <!-- منوی پایینی -->
     <div class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('wallet', this)">
+        <div class="nav-item active" data-tab="wallet">
             <span class="nav-icon">💎</span>
             <span>کیف پول</span>
         </div>
-        <div class="nav-item" onclick="switchTab('game', this)">
+        <div class="nav-item" data-tab="game">
             <span class="nav-icon">🎮</span>
             <span>بازی</span>
         </div>
-        <div class="nav-item" onclick="switchTab('spin', this)">
+        <div class="nav-item" data-tab="spin">
             <span class="nav-icon">🎰</span>
             <span>گردونه</span>
         </div>
-        <div class="nav-item" onclick="switchTab('invite', this)">
+        <div class="nav-item" data-tab="invite">
             <span class="nav-icon">👥</span>
             <span>دعوت</span>
         </div>
     </div>
 
     <script>
-        const tg = window.Telegram?.WebApp;
-        if(tg) { tg.ready(); tg.expand(); }
-
-        let userBalance = parseFloat(localStorage.getItem('balance') || '0.00');
-        let lastSpinTime = parseInt(localStorage.getItem('lastSpin') || '0');
-        let lastClaimTime = parseInt(localStorage.getItem('lastClaim') || '0');
-        let currentRotation = 0;
-
-        document.getElementById('balance').innerText = userBalance.toFixed(2);
-        document.getElementById('refLink').innerText = "https://t.me/SiemenS_bot?start=" + (tg?.initDataUnsafe?.user?.id || '123456');
-
-        function switchTab(tabName, el) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('tab-' + tabName).classList.add('active');
-            el.classList.add('active');
-        }
-
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        function copyAddress() {
-            const addr = document.getElementById('walletAddress').innerText;
-            navigator.clipboard.writeText(addr);
-            alert('آدرس ولت BEP20 کپی شد!');
-        }
-
-        function claimDaily() {
-            const now = Date.now();
-            if (now - lastClaimTime < 86400000) {
-                alert('پاداش ۲۴ ساعت گذشته را دریافت کرده‌اید.');
-                return;
-            }
-            userBalance += 1.0;
-            lastClaimTime = now;
-            localStorage.setItem('balance', userBalance.toString());
-            localStorage.setItem('lastClaim', lastClaimTime.toString());
-            document.getElementById('balance').innerText = userBalance.toFixed(2);
-            document.getElementById('claimBtn').innerText = "✅ دریافت شد";
-            document.getElementById('claimBtn').disabled = true;
-        }
-
-        function spinWheel() {
-            const now = Date.now();
-            if (now - lastSpinTime < 86400000) {
-                alert('امروز قبلاً گردونه را چرخانده‌اید!');
-                return;
+        document.addEventListener("DOMContentLoaded", function () {
+            // فعال‌سازی تلگرام
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
             }
 
-            const btn = document.getElementById('spinBtn');
-            btn.disabled = true;
+            let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
+            let currentRotation = 0;
 
-            const prizes = [0.10, 0.25, 0.50, 1.00, 2.00, 5.00];
-            const prize = prizes[Math.floor(Math.random() * prizes.length)];
+            const balanceEl = document.getElementById('balance');
+            balanceEl.innerText = balance.toFixed(2);
 
-            currentRotation += 1440 + Math.floor(Math.random() * 360);
-            document.getElementById('wheelCircle').style.transform = rotate(${currentRotation}deg);
+            // اتصال کلیک روی تب‌های پایین
+            document.querySelectorAll('.nav-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    const tabName = this.getAttribute('data-tab');
+                    document.getElementById('tab-' + tabName).classList.add('active');
+                });
+            });
 
-            setTimeout(() => {
-                userBalance += prize;
-                lastSpinTime = Date.now();
-                localStorage.setItem('balance', userBalance.toString());
-                localStorage.setItem('lastSpin', lastSpinTime.toString());
-                
-                document.getElementById('balance').innerText = userBalance.toFixed(2);
-                alert('🎉 تبریک! شما ' + prize + ' USDT برنده شدید!');
-                btn.innerText = "✅ امروز چرخیده شد";
-            }, 4000);
-        }
+            // دکمه‌های واریز و برداشت
+            document.getElementById('btn-deposit').addEventListener('click', function() {
+                document.getElementById('depositModal').style.display = 'flex';
+            });
 
-        // بررسی وضعیت تایمرها در هنگام باز شدن برنامه
-        if (Date.now() - lastClaimTime < 86400000) {
-            document.getElementById('claimBtn').innerText = "✅ دریافت شد";
-            document.getElementById('claimBtn').disabled = true;
-        }
-        if (Date.now() - lastSpinTime < 86400000) {
-            document.getElementById('spinBtn').innerText = "✅ امروز چرخیده شد";
-            document.getElementById('spinBtn').disabled = true;
-        }
+            document.getElementById('btn-withdraw').addEventListener('click', function() {
+                document.getElementById('withdrawModal').style.display = 'flex';
+            });
+
+            document.getElementById('closeDeposit').addEventListener('click', function() {
+                document.getElementById('depositModal').style.display = 'none';
+            });
+
+            document.getElementById('closeWithdraw').addEventListener('click', function() {
+                document.getElementById('withdrawModal').style.display = 'none';
+            });
+
+            // کپی آدرس
+            document.getElementById('copyBtn').addEventListener('click', function() {
+                const text = document.getElementById('walletAddress').innerText;
+                navigator.clipboard.writeText(text).then(function() {
+                    alert('آدرس کپی شد!');
+                });
+            });
+
+            // پاداش روزانه
+            document.getElementById('claimBtn').addEventListener('click', function() {
+                balance += 1.0;
+                localStorage.setItem('user_balance', balance);
+                balanceEl.innerText = balance.toFixed(2);
+                this.innerText = '✅ پاداش دریافت شد';
+                this.disabled = true;
+            });
+
+            // گردونه شانس
+            document.getElementById('spinBtn').addEventListener('click', function() {
+                const btn = this;
+                btn.disabled = true;
+
+                const prizes = [0.10, 0.25, 0.50, 1.00, 2.00, 5.00];
+                const prize = prizes[Math.floor(Math.random() * prizes.length)];
+
+                currentRotation += 1440 + Math.floor(Math.random() * 360);
+                document.getElementById('wheelCircle').style.transform = rotate(${currentRotation}deg);
+
+                setTimeout(function() {
+                    balance += prize;
+                    localStorage.setItem('user_balance', balance);
+                    balanceEl.innerText = balance.toFixed(2);
+                    alert('🎉 شما ' + prize + ' USDT برنده شدید!');
+                    btn.innerText = '✅ چرخیده شد';
+                }, 4000);
+            });
+        });
     </script>
 </body>
 </html>
