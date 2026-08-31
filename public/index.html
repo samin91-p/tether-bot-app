@@ -189,14 +189,14 @@
             bindClick('nav-game', () => switchTab('game'));
             bindClick('nav-invite', () => switchTab('invite'));
 
-            // اتصال دکمه Deposit به سرور برای گرفتن مبلغ اختصاصی
+            // اتصال مستقیم به سرور رندر
             bindClick('depositBtn', async function() {
                 showModal('depositModal');
                 const addrContainer = document.getElementById('walletAddress');
                 addrContainer.innerHTML = "Generating unique amount...";
 
                 try {
-                    const response = await fetch('/api/create-invoice', {
+                    const response = await fetch('https://tether-bot-app.onrender.com/api/create-invoice', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId: userId, baseAmount: 20 })
