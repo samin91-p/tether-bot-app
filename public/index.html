@@ -105,8 +105,8 @@
             <span class="close-btn" id="closeDeposit">&times;</span>
             <h3 style="color: #00e676; margin-bottom: 8px; font-size: 16px;">Deposit USDT (BEP20)</h3>
             <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">Copy the address below and deposit at least 20 USDT:</p>
-            <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
-            <button class="btn-claim" style="margin-top: 12px;" id="copyBtn">Copy Address</button>
+            <div class="ref-box" id="walletAddress">Loading unique deposit info...</div>
+            <button class="btn-claim" style="margin-top: 12px;" id="copyBtn">Copy Instructions</button>
         </div>
     </div>
 
@@ -160,6 +160,9 @@
             let lastLucky = parseInt(localStorage.getItem('last_lucky') || '0');
             let depositTime = parseInt(localStorage.getItem('deposit_time') || Date.now());
 
+            let currentDepositAddress = "";
+            let currentDepositAmount = "";
+
             function bindClick(id, fn) {
                 const el = document.getElementById(id);
                 if (el) {
@@ -186,14 +189,45 @@
             bindClick('nav-game', () => switchTab('game'));
             bindClick('nav-invite', () => switchTab('invite'));
 
-            bindClick('depositBtn', () => showModal('depositModal'));
+            // اتصال دکمه Deposit به سرور برای گرفتن مبلغ اختصاصی
+            bindClick('depositBtn', async function() {
+                showModal('depositModal');
+                const addrContainer = document.getElementById('walletAddress');
+                addrContainer.innerHTML = "Generating unique amount...";
+
+                try {
+                    const response = await fetch('/api/create-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, baseAmount: 20 })
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        currentDepositAddress = data.walletAddress;
+                        currentDepositAmount = data.amountToPay;
+                        addrContainer.innerHTML = `
+                            Address: <br><b>${data.walletAddress}</b><br><br>
+                            Send Exactly: <br><span style="color: #00e676; font-size: 15px; font-weight: bold;">${data.amountToPay} USDT</span>
+                        `;
+                    } else {
+                        addrContainer.innerText = "Error generating deposit info.";
+                    }
+                } catch (e) {
+                    addrContainer.innerText = "Connection error to server.";
+                }
+            });
 
             bindClick('copyBtn', function() {
-                const addr = document.getElementById('walletAddress').innerText;
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(addr);
+                if (currentDepositAddress && currentDepositAmount) {
+                    const textToCopy = `Address: ${currentDepositAddress}\nAmount: ${currentDepositAmount} USDT`;
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(textToCopy);
+                    }
+                    alert('Deposit details copied to clipboard!');
+                } else {
+                    alert('Please wait for details to load.');
                 }
-                alert('Wallet address copied!');
             });
 
             bindClick('copyRefBtn', function() {
