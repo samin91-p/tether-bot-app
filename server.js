@@ -1,16 +1,19 @@
 const express = require('express');
-const cors = require('cors');
 const path = require('path');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// فعال‌سازی کامل CORS برای جلوگیری از مسدود شدن در تلگرام
-app.use(cors({ origin: '*' }));
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ذخیره داده‌ها در حافظه سرور (بدون نیاز به نام‌کاربری و رمز عبور dbs)
 let users = {};
 
 app.get('/api/user/:id', (req, res) => {
@@ -54,4 +57,6 @@ app.post('/api/claim', (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(Server running on port ${PORT}));
+app.listen(PORT, function() {
+    console.log('Server running on port ' + PORT);
+});
