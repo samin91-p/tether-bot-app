@@ -68,9 +68,15 @@ app.get('/api/user/:userId', (req, res) => {
             totalDeposited: 0, 
             depositTime: 0, 
             lastClaim: 0, 
-            lastLucky: 0 
+            lastLucky: 0,
+            lastGame: 0
         };
         writeDB(db);
+    } else {
+        if (db[userId].lastGame === undefined) {
+            db[userId].lastGame = 0;
+            writeDB(db);
+        }
     }
     
     res.json({ success: true, data: db[userId] });
@@ -82,7 +88,7 @@ app.post('/api/admin/charge', (req, res) => {
     const db = readDB();
     
     if (!db[userId]) {
-        db[userId] = { balance: 0, totalDeposited: 0, depositTime: 0, lastClaim: 0, lastLucky: 0 };
+        db[userId] = { balance: 0, totalDeposited: 0, depositTime: 0, lastClaim: 0, lastLucky: 0, lastGame: 0 };
     }
     
     db[userId].balance += parseFloat(amount || 0);
@@ -96,7 +102,7 @@ app.post('/api/admin/charge', (req, res) => {
     res.json({ success: true, data: db[userId] });
 });
 
-// 1. دریافت جایزه روزانه (1 USDT)
+// دریافت جایزه روزانه (1 USDT)
 app.post('/api/claim-reward', (req, res) => {
     const { userId } = req.body;
     const db = readDB();
@@ -119,7 +125,7 @@ app.post('/api/claim-reward', (req, res) => {
     res.json({ success: true, data: db[userId], reward: 1.0 });
 });
 
-// 2. باز کردن جعبه شانس (بین 1 تا 5 USDT)
+// باز کردن جعبه شانس (بین 1 تا 5 USDT)
 app.post('/api/open-lucky', (req, res) => {
     const { userId } = req.body;
     const db = readDB();
@@ -143,7 +149,7 @@ app.post('/api/open-lucky', (req, res) => {
     res.json({ success: true, data: db[userId], reward: randomReward });
 });
 
-// 3. بازی چرخش (Mystery Spin Game - نیازی به محدودیت ۲۴ ساعته ندارد یا مثل بقیه)
+// بازی چرخش (Mystery Spin Game - یک بار در هفته / هر ۷ روز)
 app.post('/api/play-game', (req, res) => {
     const { userId } = req.body;
     const db = readDB();
@@ -152,10 +158,18 @@ app.post('/api/play-game', (req, res) => {
         return res.json({ success: false, message: "Requirement not met (Min 40 USDT deposit)" });
     }
     
-    const prizes = [2.0, 5.0, 10.0, 20.0, 0.5, 1.5];
+    const WEEK_COOLDOWN = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    
+    if (db[userId].lastGame && (now - db[userId].lastGame < WEEK_COOLDOWN)) {
+        return res.json({ success: false, message: "You can only play once a week!" });
+    }
+    
+    const prizes = [2.0, 5.0, 10.0, 20.0, 3.0, 4.0];
     const wonPrize = prizes[Math.floor(Math.random() * prizes.length)];
     
     db[userId].balance += wonPrize;
+    db[userId].lastGame = now;
     writeDB(db);
     
     res.json({ success: true, data: db[userId], reward: wonPrize });
