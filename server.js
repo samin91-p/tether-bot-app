@@ -6,7 +6,6 @@ app.use(express.json());
 
 let users = {};
 
-// ارسال مستقیم صفحه فرانت‌اند از طریق سرور (بدون وابستگی به فایل‌های دیگر)
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -17,36 +16,107 @@ app.get('/', (req, res) => {
     <title>SiemenS Mini-App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #121526; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .status { margin-bottom: 15px; font-size: 14px; color: #00e676; font-weight: bold; }
-        .card { background-color: #1d2238; border-radius: 12px; padding: 20px; width: 100%; max-width: 350px; text-align: center; margin-bottom: 15px; box-sizing: border-box; }
-        .title { color: #8a92b2; font-size: 14px; margin-bottom: 8px; }
-        .balance { color: #00e676; font-size: 32px; font-weight: bold; }
-        .btn { background-color: #00c853; color: white; border: none; padding: 14px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn:disabled { background-color: #444; color: #aaa; cursor: not-allowed; }
-        .timer { margin-top: 10px; font-size: 14px; color: #ffb74d; }
-        .ref-box { background: #141824; padding: 10px; border-radius: 8px; font-size: 12px; word-break: break-all; margin-top: 10px; user-select: all; color: #64b5f6; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0f1026; color: #fff; margin: 0; padding: 20px 15px 90px 15px; display: flex; flex-direction: column; align-items: center; }
+        
+        .card { background: linear-gradient(145deg, #181b3a, #131530); border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .balance-title { color: #8a92b2; font-size: 14px; margin-bottom: 5px; }
+        .balance-val { color: #00e676; font-size: 38px; font-weight: 800; letter-spacing: 1px; }
+        
+        .action-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 15px; }
+        .btn-action { flex: 1; padding: 14px; border-radius: 14px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-deposit { background: linear-gradient(135deg, #00c853, #00e676); color: #000; }
+        .btn-withdraw { background: #1c2040; color: #8a92b2; border: 1px solid #2d3361; }
+        
+        .alert-box { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); color: #ffb74d; border-radius: 12px; padding: 12px; width: 100%; max-width: 380px; font-size: 12px; text-align: center; margin-bottom: 15px; }
+        
+        .reward-title { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+        .reward-sub { font-size: 12px; color: #8a92b2; margin-bottom: 15px; }
+        
+        .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 14px; border-radius: 14px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
+        
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 11px; text-decoration: none; }
+        .nav-item.active { color: #00e676; }
+        .nav-icon { font-size: 18px; }
+
+        .tab-content { display: none; width: 100%; max-width: 380px; }
+        .tab-content.active { display: block; }
+
+        .ref-box { background: #0b0c1e; padding: 12px; border-radius: 10px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="status" id="status">در حال اتصال...</div>
+    <!-- تب کیف پول (صفحه اصلی) -->
+    <div id="tab-wallet" class="tab-content active">
+        <div class="card">
+            <div class="balance-title">موجودی حساب شما</div>
+            <div class="balance-val"><span id="balance">0.00</span> <span style="font-size: 20px;">USDT</span></div>
+        </div>
 
-    <div class="card">
-        <div class="title">موجودی حساب شما</div>
-        <div class="balance"><span id="balance">0.00</span> USDT</div>
+        <div class="action-btns">
+            <button class="btn-action btn-withdraw">🔒 برداشت (5 روز مانده)</button>
+            <button class="btn-action btn-deposit">📩 واریز</button>
+        </div>
+
+        <div class="alert-box">
+            ⏳ امکان برداشت ۸۰٪ سرمایه ۵ روز دیگر فعال می‌شود.
+        </div>
+
+        <div class="card">
+            <div class="reward-title">🎁 پاداش روزانه</div>
+            <div class="reward-sub">هر ۲۴ ساعت یک‌بار ۱ USDT دریافت کنید!</div>
+            <button class="btn-claim" id="claimBtn" onclick="claimReward()">دریافت پاداش</button>
+            <div id="timer" style="margin-top: 10px; font-size: 13px; color: #ffb74d;"></div>
+        </div>
     </div>
 
-    <div class="card">
-        <div class="title">پاداش روزانه (۱ USDT)</div>
-        <button class="btn" id="claimBtn" onclick="claimReward()">دریافت پاداش</button>
-        <div class="timer" id="timer"></div>
+    <!-- تب دعوت -->
+    <div id="tab-invite" class="tab-content">
+        <div class="card">
+            <div class="reward-title">👥 دعوت از دوستان</div>
+            <div class="reward-sub">با دعوت هر دوست ۰.۵ USDT پاداش بگیرید</div>
+            <div style="margin: 15px 0; font-size: 16px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
+            <div class="ref-box" id="refLink">در حال دریافت لینک...</div>
+        </div>
     </div>
 
-    <div class="card">
-        <div class="title">دعوت از دوستان (۰.۵ USDT پاداش)</div>
-        <div>تعداد زیرمجموعه‌ها: <b id="refCount">0</b> نفر</div>
-        <div class="ref-box" id="refLink">در حال دریافت لینک...</div>
+    <!-- تب بازی -->
+    <div id="tab-game" class="tab-content">
+        <div class="card">
+            <div class="reward-title">🎮 بخش بازی</div>
+            <div class="reward-sub">این بخش به زودی فعال می‌شود!</div>
+        </div>
+    </div>
+
+    <!-- تب گردونه -->
+    <div id="tab-spin" class="tab-content">
+        <div class="card">
+            <div class="reward-title">🎰 گردونه شانس</div>
+            <div class="reward-sub">این بخش به زودی فعال می‌شود!</div>
+        </div>
+    </div>
+
+    <!-- منوی پایینی -->
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="switchTab('wallet', this)">
+            <span class="nav-icon">💎</span>
+            <span>کیف پول</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('game', this)">
+            <span class="nav-icon">🎮</span>
+            <span>بازی</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('spin', this)">
+            <span class="nav-icon">🎰</span>
+            <span>گردونه</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('invite', this)">
+            <span class="nav-icon">👥</span>
+            <span>دعوت</span>
+        </div>
     </div>
 
     <script>
@@ -59,6 +129,14 @@ app.get('/', (req, res) => {
 
         let timerInterval = null;
 
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+            el.classList.add('active');
+        }
+
         function loadData() {
             fetch('/api/user/' + userId + '?ref=' + startParam)
                 .then(res => res.json())
@@ -66,13 +144,8 @@ app.get('/', (req, res) => {
                     document.getElementById('balance').innerText = Number(data.balance || 0).toFixed(2);
                     document.getElementById('refCount').innerText = data.referrals || 0;
                     document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
-                    document.getElementById('status').innerText = 'متصل شد';
 
                     checkTimer(data.lastClaim || 0);
-                })
-                .catch(err => {
-                    document.getElementById('status').innerText = 'خطا در اتصال به سرور';
-                    document.getElementById('status').style.color = '#ff5252';
                 });
         }
 
@@ -91,6 +164,7 @@ app.get('/', (req, res) => {
         function startCountdown(remainingMs) {
             const btn = document.getElementById('claimBtn');
             btn.disabled = true;
+            btn.innerText = '✅ پاداش امروز دریافت شد';
             
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
@@ -104,7 +178,6 @@ app.get('/', (req, res) => {
                 const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
                 
-                btn.innerText = 'دریافت شد';
                 document.getElementById('timer').innerText = 'دریافت بعدی: ' + hours + ':' + minutes + ':' + seconds;
             }, 1000);
         }
@@ -130,8 +203,7 @@ app.get('/', (req, res) => {
                 } else {
                     alert(data.message);
                 }
-            })
-            .catch(err => alert('خطا در برقراری ارتباط با سرور'));
+            });
         }
 
         loadData();
@@ -142,46 +214,34 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/user/:id', (req, res) => {
-    try {
-        const id = String(req.params.id || '123456');
-        const refBy = req.query.ref;
+    const id = String(req.params.id || '123456');
+    const refBy = req.query.ref;
 
-        if (!users[id]) {
-            users[id] = { balance: 0, lastClaim: 0, referrals: 0 };
-            if (refBy && users[refBy] && refBy !== id) {
-                users[refBy].balance += 0.50;
-                users[refBy].referrals += 1;
-            }
+    if (!users[id]) {
+        users[id] = { balance: 0, lastClaim: 0, referrals: 0 };
+        if (refBy && users[refBy] && refBy !== id) {
+            users[refBy].balance += 0.50;
+            users[refBy].referrals += 1;
         }
-        res.json(users[id]);
-    } catch (err) {
-        res.status(500).json({ balance: 0, lastClaim: 0, referrals: 0 });
     }
+    res.json(users[id]);
 });
 
 app.post('/api/claim', (req, res) => {
-    try {
-        const id = String(req.body.userId || '123456');
-        const now = Date.now();
-        const COOLDOWN = 24 * 60 * 60 * 1000;
+    const id = String(req.body.userId || '123456');
+    const now = Date.now();
+    const COOLDOWN = 24 * 60 * 60 * 1000;
 
-        if (!users[id]) {
-            users[id] = { balance: 0, lastClaim: 0, referrals: 0 };
-        }
+    if (!users[id]) users[id] = { balance: 0, lastClaim: 0, referrals: 0 };
 
-        const user = users[id];
-        if (now - user.lastClaim < COOLDOWN) {
-            return res.json({ success: false, message: 'هنوز ۲۴ ساعت نگذشته است.' });
-        }
-
-        user.balance += 1.00;
-        user.lastClaim = now;
-        res.json({ success: true, newBalance: user.balance, lastClaim: user.lastClaim });
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'خطای سرور' });
+    const user = users[id];
+    if (now - user.lastClaim < COOLDOWN) {
+        return res.json({ success: false, message: 'هنوز ۲۴ ساعت نگذشته است.' });
     }
+
+    user.balance += 1.00;
+    user.lastClaim = now;
+    res.json({ success: true, newBalance: user.balance, lastClaim: user.lastClaim });
 });
 
-app.listen(PORT, () => {
-    console.log('Server running on port ' + PORT);
-});
+app.listen(PORT, () => console.log('Server running on port ' + PORT));
