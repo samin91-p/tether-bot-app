@@ -27,9 +27,9 @@
         .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 11px; cursor: pointer; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 12px; cursor: pointer; width: 50%; }
         .nav-item.active { color: #00e676; }
-        .nav-icon { font-size: 18px; }
+        .nav-icon { font-size: 20px; }
 
         .tab-content { display: none; width: 100%; max-width: 380px; }
         .tab-content.active { display: block; }
@@ -77,22 +77,6 @@
         </div>
     </div>
 
-    <!-- بازی -->
-    <div id="tab-game" class="tab-content">
-        <div class="card">
-            <div class="reward-title">🎮 بخش بازی</div>
-            <div class="reward-sub">این بخش به زودی فعال می‌شود!</div>
-        </div>
-    </div>
-
-    <!-- گردونه -->
-    <div id="tab-spin" class="tab-content">
-        <div class="card">
-            <div class="reward-title">🎰 گردونه شانس</div>
-            <div class="reward-sub">این بخش به زودی فعال می‌شود!</div>
-        </div>
-    </div>
-
     <!-- پاپ‌آپ واریز -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
@@ -113,19 +97,11 @@
         </div>
     </div>
 
-    <!-- منو -->
+    <!-- منو (فقط کیف پول و دعوت) -->
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('wallet', this)">
             <span class="nav-icon">💎</span>
             <span>کیف پول</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('game', this)">
-            <span class="nav-icon">🎮</span>
-            <span>بازی</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('spin', this)">
-            <span class="nav-icon">🎰</span>
-            <span>گردونه</span>
         </div>
         <div class="nav-item" onclick="switchTab('invite', this)">
             <span class="nav-icon">👥</span>
