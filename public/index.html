@@ -107,6 +107,8 @@
             <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">Copy the address below and deposit at least 20 USDT:</p>
             <div class="ref-box" id="walletAddress">Loading unique deposit info...</div>
             <button class="btn-claim" style="margin-top: 12px;" id="copyBtn">Copy Instructions</button>
+            <!-- دکمه جدید بررسی پرداخت -->
+            <button class="btn-claim" style="margin-top: 8px; background: #00e676; color: #000; border: none;" id="verifyPaymentBtn">✅ من واریز کردم / بررسی پرداخت</button>
         </div>
     </div>
 
@@ -189,7 +191,6 @@
             bindClick('nav-game', () => switchTab('game'));
             bindClick('nav-invite', () => switchTab('invite'));
 
-            // اتصال مستقیم به سرور رندر
             bindClick('depositBtn', async function() {
                 showModal('depositModal');
                 const addrContainer = document.getElementById('walletAddress');
@@ -215,6 +216,30 @@
                     }
                 } catch (e) {
                     addrContainer.innerText = "Connection error to server.";
+                }
+            });
+
+            // رویداد دکمه بررسی پرداخت
+            bindClick('verifyPaymentBtn', async function() {
+                if (!currentDepositAmount) {
+                    alert('لطفاً ابتدا اطلاعات واریز را دریافت کنید.');
+                    return;
+                }
+                try {
+                    const res = await fetch('https://tether-bot-app.onrender.com/api/verify-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, amountToPay: currentDepositAmount })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert('درخواست بررسی پرداخت شما ثبت شد. پس از تایید ادمین، حساب شما شارژ خواهد شد.');
+                        hideModal('depositModal');
+                    } else {
+                        alert('خطا در ثبت درخواست.');
+                    }
+                } catch (err) {
+                    alert('خطا در ارتباط با سرور.');
                 }
             });
 
@@ -308,7 +333,6 @@
                 }
             });
 
-            // Mystery Spin Game Logic (Requires 40 USDT deposit)
             bindClick('playGameBtn', function() {
                 if (totalDeposited < 40.0) {
                     document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>40 USDT</b> to play this game.';
