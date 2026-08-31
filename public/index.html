@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SiemenS App</title>
+    <title>SiemenS Mini-App</title>
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; user-select: none; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { background-color: #0f1026; color: #fff; padding: 15px 15px 80px 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
         .card { background: #181b3a; border-radius: 16px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 12px; border: 1px solid #2d3361; }
@@ -13,7 +13,7 @@
         .balance-val { color: #00e676; font-size: 36px; font-weight: 800; }
         
         .action-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 12px; }
-        .btn-action { flex: 1; padding: 12px; border-radius: 12px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; }
+        .btn-action { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; }
         .btn-deposit { background: #00e676; color: #000; }
         .btn-withdraw { background: #1c2040; color: #8a92b2; border: 1px solid #2d3361; }
         .btn-withdraw.active { background: #00e676; color: #000; border: none; }
@@ -23,8 +23,8 @@
         .reward-title { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
         .reward-sub { font-size: 11px; color: #8a92b2; margin-bottom: 12px; }
         
-        .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 12px; border-radius: 12px; width: 100%; font-size: 14px; font-weight: bold; cursor: pointer; }
-        .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; }
+        .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 14px; border-radius: 12px; width: 100%; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #1e2247; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #5c628a; font-size: 11px; cursor: pointer; width: 50%; }
@@ -34,106 +34,97 @@
         .tab-content.active { display: block; }
 
         .ref-box { background: #0b0c1e; padding: 10px; border-radius: 8px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 8px; border: 1px dashed #2d3361; }
-        .input-field { width: 100%; padding: 10px; background: #0b0c1e; border: 1px solid #2d3361; border-radius: 8px; color: #fff; text-align: center; margin-top: 8px; font-size: 12px; outline: none; }
+        .input-field { width: 100%; padding: 12px; background: #0b0c1e; border: 1px solid #2d3361; border-radius: 8px; color: #fff; text-align: center; margin-top: 8px; font-size: 12px; outline: none; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #181b3a; border-radius: 16px; padding: 20px; width: 85%; max-width: 330px; text-align: center; border: 1px solid #2d3361; position: relative; }
-        .close-btn { position: absolute; top: 8px; left: 12px; font-size: 22px; cursor: pointer; color: #8a92b2; }
+        .close-btn { position: absolute; top: 8px; right: 12px; font-size: 24px; cursor: pointer; color: #8a92b2; }
     </style>
 </head>
 <body>
 
-    <!-- تب کیف پول -->
+    <!-- Wallet Tab -->
     <div id="tab-wallet" class="tab-content active">
         <div class="card">
-            <div class="balance-title">موجودی حساب شما</div>
+            <div class="balance-title">Account Balance</div>
             <div class="balance-val"><span id="balance">0.00</span> USDT</div>
         </div>
 
         <div class="action-btns">
-            <button class="btn-action btn-withdraw" id="withdrawBtn">🔒 قفل برداشت</button>
-            <button class="btn-action btn-deposit" id="depositBtn">📩 واریز</button>
+            <button class="btn-action btn-withdraw" id="withdrawBtn">🔒 Locked</button>
+            <button class="btn-action btn-deposit" id="depositBtn">📩 Deposit</button>
         </div>
 
         <div class="alert-box" id="lockNotice">
-            ⏳ امکان برداشت سرمایه ۵ روز پس از واریز ۲۰ USDT فعال می‌شود.
+            ⏳ Withdrawal is locked for 5 days after depositing 20 USDT.
         </div>
 
         <div class="card">
-            <div class="reward-title">🎁 پاداش روزانه</div>
-            <div class="reward-sub">شرط دریافت: حداقل ۲۰ USDT واریزی فعال</div>
-            <button class="btn-claim" id="claimBtn">دریافت پاداش</button>
-            <div id="timer" style="margin-top: 8px; font-size: 12px; color: #ffb74d;"></div>
+            <div class="reward-title">🎁 Daily Reward</div>
+            <div class="reward-sub">Requirement: Minimum 20 USDT active deposit</div>
+            <button class="btn-claim" id="claimBtn">Claim Reward</button>
         </div>
     </div>
 
-    <!-- تب دعوت -->
+    <!-- Referral Tab -->
     <div id="tab-invite" class="tab-content">
         <div class="card">
-            <div class="reward-title">👥 دعوت از دوستان</div>
-            <div class="reward-sub">با دعوت هر دوست ۰.۵ USDT پاداش بگیرید</div>
-            <div style="margin: 10px 0; font-size: 14px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
-            <div class="ref-box" id="refLink">در حال دریافت لینک...</div>
+            <div class="reward-title">👥 Invite Friends</div>
+            <div class="reward-sub">Earn 0.5 USDT for each valid referral</div>
+            <div style="margin: 10px 0; font-size: 14px;">Total Referrals: <b id="refCount" style="color: #00e676;">0</b></div>
+            <div class="ref-box" id="refLink">Loading referral link...</div>
         </div>
     </div>
 
-    <!-- پاپ‌آورها -->
+    <!-- Deposit Modal -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="closeDeposit">&times;</span>
-            <h3 style="color: #00e676; margin-bottom: 8px; font-size: 16px;">واریز USDT (BEP20)</h3>
-            <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">آدرس زیر را کپی کرده و حداقل ۲۰ تتر واریز کنید:</p>
+            <h3 style="color: #00e676; margin-bottom: 8px; font-size: 16px;">Deposit USDT (BEP20)</h3>
+            <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">Copy the address below and deposit at least 20 USDT:</p>
             <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
-            <button class="btn-claim" style="margin-top: 12px;" id="copyBtn">کپی آدرس ولت</button>
-            <button class="btn-claim" style="margin-top: 8px; background: #29b6f6; color: #000; border: none;" id="simDepositBtn">تست: ثبت واریز ۲۰ تتر</button>
+            <button class="btn-claim" style="margin-top: 12px;" id="copyBtn">Copy Address</button>
+            <button class="btn-claim" style="margin-top: 8px; background: #29b6f6; color: #000; border: none;" id="simDepositBtn">Test: Simulate 20 USDT Deposit</button>
         </div>
     </div>
 
+    <!-- Requirement Alert Modal -->
     <div id="depositRequiredModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="closeReq">&times;</span>
-            <h3 style="color: #ffb74d; margin-bottom: 8px; font-size: 16px;">⚠️ عدم فعال‌سازی</h3>
-            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 12px;">برای فعال‌سازی ابتدا باید حداقل <b>۲۰ USDT</b> به حساب خود واریز کنید.</p>
-            <button class="btn-claim" style="background: #00e676; color: #000;" id="goToDepositBtn">ورود به بخش واریز</button>
+            <h3 style="color: #ffb74d; margin-bottom: 8px; font-size: 16px;">⚠️ Deposit Required</h3>
+            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 12px;">You must deposit at least <b>20 USDT</b> to activate features.</p>
+            <button class="btn-claim" style="background: #00e676; color: #000;" id="goToDepositBtn">Go to Deposit</button>
         </div>
     </div>
 
+    <!-- Withdraw Modal -->
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="closeWithdraw">&times;</span>
-            <h3 style="color: #00e676; margin-bottom: 8px; font-size: 16px;">درخواست برداشت</h3>
-            <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">آدرس کیف پول BEP20 خود را وارد کنید:</p>
-            <input type="text" id="withdrawAddressInput" class="input-field" placeholder="آدرس ولت BEP20">
-            <button class="btn-claim" style="margin-top: 12px; background: #00e676; color: #000; border: none;" id="confirmWithdrawBtn">تایید برداشت</button>
+            <h3 style="color: #00e676; margin-bottom: 8px; font-size: 16px;">Request Withdrawal</h3>
+            <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">Enter your BEP20 Wallet Address:</p>
+            <input type="text" id="withdrawAddressInput" class="input-field" placeholder="BEP20 Address">
+            <button class="btn-claim" style="margin-top: 12px; background: #00e676; color: #000; border: none;" id="confirmWithdrawBtn">Confirm Withdrawal</button>
         </div>
     </div>
 
-    <!-- منو -->
+    <!-- Bottom Navigation -->
     <div class="nav-bar">
         <div class="nav-item active" id="nav-wallet">
             <span style="font-size: 18px;">💎</span>
-            <span>کیف پول</span>
+            <span>Wallet</span>
         </div>
         <div class="nav-item" id="nav-invite">
             <span style="font-size: 18px;">👥</span>
-            <span>دعوت</span>
+            <span>Invite</span>
         </div>
     </div>
 
     <script>
-        (function() {
+        document.addEventListener('DOMContentLoaded', function () {
             let userId = '6559439220';
             const botUsername = "SiemenS_bot"; 
-
-            try {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.ready();
-                    window.Telegram.WebApp.expand();
-                    if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                        userId = window.Telegram.WebApp.initDataUnsafe.user.id;
-                    }
-                }
-            } catch(e) {}
 
             let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
             let totalDeposited = parseFloat(localStorage.getItem('total_deposited') || '0.00');
@@ -143,11 +134,7 @@
             function bindClick(id, fn) {
                 const el = document.getElementById(id);
                 if (el) {
-                    el.addEventListener('click', fn);
-                    el.addEventListener('touchstart', function(e) {
-                        e.preventDefault();
-                        fn();
-                    }, {passive: false});
+                    el.onclick = fn;
                 }
             }
 
@@ -177,8 +164,10 @@
 
             bindClick('copyBtn', function() {
                 const addr = document.getElementById('walletAddress').innerText;
-                if (navigator.clipboard) navigator.clipboard.writeText(addr);
-                alert('آدرس ولت کپی شد!');
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(addr);
+                }
+                alert('Wallet address copied!');
             });
 
             bindClick('simDepositBtn', function() {
@@ -191,7 +180,7 @@
                 localStorage.setItem('deposit_time', depositTime);
                 
                 hideModal('depositModal');
-                alert('۲۰ USDT ثبت شد! قفل برداشت ۵ روزه فعال شد.');
+                alert('20 USDT Deposit registered! 5-day lock activated.');
                 render();
             });
 
@@ -202,7 +191,7 @@
                 }
                 const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
                 if (Date.now() - depositTime < FIVE_DAYS) {
-                    alert('برداشت هنوز قفل است! ۵ روز زمان قفل کامل نشده است.');
+                    alert('Withdrawal is locked! Please wait until the 5-day lock period ends.');
                     return;
                 }
                 showModal('withdrawModal');
@@ -211,7 +200,7 @@
             bindClick('confirmWithdrawBtn', function() {
                 const addr = document.getElementById('withdrawAddressInput').value.trim();
                 if (!addr) {
-                    alert('لطفاً آدرس ولت را وارد کنید!');
+                    alert('Please enter your wallet address!');
                     return;
                 }
 
@@ -222,7 +211,7 @@
                 document.getElementById('withdrawAddressInput').value = '';
                 hideModal('withdrawModal');
 
-                alert('درخواست برداشت ثبت شد!');
+                alert('Withdrawal request submitted!');
                 render();
             });
 
@@ -239,7 +228,7 @@
                     localStorage.setItem('user_balance', balance);
                     localStorage.setItem('last_claim', lastClaim);
                     render();
-                    alert('۱ تتر دریافت شد!');
+                    alert('1.00 USDT reward claimed successfully!');
                 }
             });
 
@@ -253,10 +242,10 @@
 
                 if (lastClaim > 0 && (now - lastClaim) < COOLDOWN) {
                     claimBtn.disabled = true;
-                    claimBtn.innerText = '✅ پاداش امروز دریافت شد';
+                    claimBtn.innerText = '✅ Reward Claimed Today';
                 } else {
                     claimBtn.disabled = false;
-                    claimBtn.innerText = 'دریافت پاداش';
+                    claimBtn.innerText = 'Claim Reward';
                 }
 
                 const withdrawBtn = document.getElementById('withdrawBtn');
@@ -264,27 +253,27 @@
                 const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
 
                 if (totalDeposited < 20.0) {
-                    withdrawBtn.innerText = '🔒 برداشت (نیاز به واریز)';
+                    withdrawBtn.innerText = '🔒 Locked';
                     withdrawBtn.className = 'btn-action btn-withdraw';
                 } else {
                     const pass = now - depositTime;
                     if (pass >= FIVE_DAYS) {
-                        withdrawBtn.innerText = '💸 برداشت موجودی';
+                        withdrawBtn.innerText = '💸 Withdraw';
                         withdrawBtn.className = 'btn-action btn-withdraw active';
-                        lockNotice.innerText = '✅ ۵ روز قفل پایان یافت. امکان برداشت فعال است.';
+                        lockNotice.innerText = '✅ 5-day lock period completed. Withdrawal active.';
                         lockNotice.style.color = '#00e676';
                     } else {
                         const rem = FIVE_DAYS - pass;
                         const days = Math.floor(rem / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((rem % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        withdrawBtn.innerText = `🔒 برداشت (${days} روز و ${hours}h)`;
-                        lockNotice.innerText = `⏳ زمان باقی‌مانده: ${days} روز و ${hours} ساعت`;
+                        withdrawBtn.innerText = `🔒 Locked (${days}d ${hours}h)`;
+                        lockNotice.innerText = `⏳ Lock period remaining: ${days} days and ${hours} hours`;
                     }
                 }
             }
 
             render();
-        })();
+        });
     </script>
 </body>
 </html>
