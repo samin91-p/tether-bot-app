@@ -41,11 +41,10 @@
         .modal-content { background: #181b3a; border-radius: 20px; padding: 25px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #2d3361; position: relative; }
         .close-btn { position: absolute; top: 10px; left: 15px; font-size: 20px; cursor: pointer; color: #8a92b2; }
 
-        /* استایل گردونه شانس */
-        .wheel-wrapper { position: relative; width: 220px; height: 220px; margin: 15px auto; }
-        .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid #ffb74d; z-index: 10; }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #00e676; background: conic-gradient(#1f244d 0deg 60deg, #161938 60deg 120deg, #1f244d 120deg 180deg, #161938 180deg 240deg, #1f244d 240deg 300deg, #161938 300deg 360deg); transition: transform 4s cubic-bezier(0.15, 0.99, 0.18, 1); display: flex; align-items: center; justify-content: center; position: relative; }
-        .wheel-text { position: absolute; font-size: 12px; font-weight: bold; color: #00e676; }
+        /* استایل گردونه */
+        .wheel-wrapper { position: relative; width: 200px; height: 200px; margin: 15px auto; }
+        .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 18px solid #ffb74d; z-index: 10; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #00e676; background: conic-gradient(#1f244d 0deg 60deg, #161938 60deg 120deg, #1f244d 120deg 180deg, #161938 180deg 240deg, #1f244d 240deg 300deg, #161938 300deg 360deg); transition: transform 4s cubic-bezier(0.15, 0.99, 0.18, 1); position: relative; }
     </style>
 </head>
 <body>
@@ -54,7 +53,7 @@
     <div id="tab-wallet" class="tab-content active">
         <div class="card">
             <div class="balance-title">موجودی حساب شما</div>
-            <div class="balance-val"><span id="balance">0.00</span> <span style="font-size: 20px;">USDT</span></div>
+            <div class="balance-val"><span id="balance">1.00</span> <span style="font-size: 20px;">USDT</span></div>
         </div>
 
         <div class="action-btns">
@@ -80,7 +79,7 @@
             <div class="reward-title">👥 دعوت از دوستان</div>
             <div class="reward-sub">با دعوت هر دوست ۰.۵ USDT پاداش بگیرید</div>
             <div style="margin: 15px 0; font-size: 16px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
-            <div class="ref-box" id="refLink">در حال دریافت لینک...</div>
+            <div class="ref-box" id="refLink">https://t.me/SiemenS_bot?start=123456</div>
         </div>
     </div>
 
@@ -96,22 +95,14 @@
     <div id="tab-spin" class="tab-content">
         <div class="card">
             <div class="reward-title">🎰 گردونه شانس</div>
-            <div class="reward-sub">هر ۲۴ ساعت شانس خود را برای دریافت تا ۵ USDT امتحان کنید!</div>
+            <div class="reward-sub">هر ۲۴ ساعت شانس خود را امتحان کنید!</div>
             
             <div class="wheel-wrapper">
                 <div class="wheel-pointer"></div>
-                <div class="wheel" id="wheelCircle">
-                    <span class="wheel-text" style="transform: rotate(30deg) translateY(-80px);">0.1 USDT</span>
-                    <span class="wheel-text" style="transform: rotate(90deg) translateY(-80px);">0.25 USDT</span>
-                    <span class="wheel-text" style="transform: rotate(150deg) translateY(-80px);">0.5 USDT</span>
-                    <span class="wheel-text" style="transform: rotate(210deg) translateY(-80px);">1 USDT</span>
-                    <span class="wheel-text" style="transform: rotate(270deg) translateY(-80px);">2 USDT</span>
-                    <span class="wheel-text" style="transform: rotate(330deg) translateY(-80px);">5 USDT</span>
-                </div>
+                <div class="wheel" id="wheelCircle"></div>
             </div>
 
             <button class="btn-claim" id="spinBtn" onclick="spinWheel()">چرخاندن گردونه</button>
-            <div id="spinTimer" style="margin-top: 10px; font-size: 13px; color: #ffb74d;"></div>
         </div>
     </div>
 
@@ -120,7 +111,7 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('depositModal')">&times;</span>
             <h3 style="color: #00e676;">واریز USDT (BEP20)</h3>
-            <p style="font-size: 12px; color: #8a92b2;">آدرس زیر را کپی کرده و روی شبکه BSC واریز کنید:</p>
+            <p style="font-size: 12px; color: #8a92b2;">آدرس زیر را کپی کرده و واریز کنید:</p>
             <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
             <button class="btn-claim" style="margin-top: 15px;" onclick="copyAddress()">کپی آدرس ولت</button>
         </div>
@@ -156,21 +147,12 @@
     </div>
 
     <script>
-        const SERVER_URL = "https://tether-bot-app.onrender.com";
-
-        const tg = window.Telegram?.WebApp;
-        if(tg) { tg.ready(); tg.expand(); }
-        
-        const userId = String(tg?.initDataUnsafe?.user?.id || '123456');
-        const botUsername = "SiemenS_bot"; 
-        const startParam = tg?.initDataUnsafe?.start_param || '';
-
-        let timerInterval = null;
-        let spinTimerInterval = null;
+        let currentBalance = 1.00;
         let currentRotation = 0;
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        
         function copyAddress() {
             const addr = document.getElementById('walletAddress').innerText;
             navigator.clipboard.writeText(addr);
@@ -185,144 +167,30 @@
             el.classList.add('active');
         }
 
-        function loadData() {
-            fetch(SERVER_URL + '/api/user/' + userId + '?ref=' + startParam)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('balance').innerText = Number(data.balance || 0).toFixed(2);
-                    document.getElementById('refCount').innerText = data.referrals || 0;
-                    document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
-
-                    checkTimer(data.lastClaim || 0);
-                    checkSpinTimer(data.lastSpin || 0);
-                });
-        }
-
-        function checkTimer(lastClaim) {
-            const COOLDOWN = 24 * 60 * 60 * 1000;
-            const now = Date.now();
-            const timePassed = now - lastClaim;
-
-            if (lastClaim > 0 && timePassed < COOLDOWN) {
-                startCountdown(COOLDOWN - timePassed);
-            } else {
-                enableButton();
-            }
-        }
-
-        function startCountdown(remainingMs) {
-            const btn = document.getElementById('claimBtn');
-            btn.disabled = true;
-            btn.innerText = '✅ پاداش امروز دریافت شد';
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                remainingMs -= 1000;
-                if (remainingMs <= 0) {
-                    clearInterval(timerInterval);
-                    enableButton();
-                    return;
-                }
-                const hours = Math.floor(remainingMs / (1000 * 60 * 60));
-                const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
-                
-                document.getElementById('timer').innerText = 'دریافت بعدی: ' + hours + ':' + minutes + ':' + seconds;
-            }, 1000);
-        }
-
-        function enableButton() {
-            const btn = document.getElementById('claimBtn');
-            btn.disabled = false;
-            btn.innerText = 'دریافت پاداش';
-            document.getElementById('timer').innerText = '';
-        }
-
-        function checkSpinTimer(lastSpin) {
-            const COOLDOWN = 24 * 60 * 60 * 1000;
-            const now = Date.now();
-            const timePassed = now - lastSpin;
-
-            if (lastSpin > 0 && timePassed < COOLDOWN) {
-                startSpinCountdown(COOLDOWN - timePassed);
-            } else {
-                enableSpinButton();
-            }
-        }
-
-        function startSpinCountdown(remainingMs) {
-            const btn = document.getElementById('spinBtn');
-            btn.disabled = true;
-            btn.innerText = '✅ گردونه امروز چرخیده شد';
-            
-            clearInterval(spinTimerInterval);
-            spinTimerInterval = setInterval(() => {
-                remainingMs -= 1000;
-                if (remainingMs <= 0) {
-                    clearInterval(spinTimerInterval);
-                    enableSpinButton();
-                    return;
-                }
-                const hours = Math.floor(remainingMs / (1000 * 60 * 60));
-                const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
-                
-                document.getElementById('spinTimer').innerText = 'چرخش بعدی: ' + hours + ':' + minutes + ':' + seconds;
-            }, 1000);
-        }
-
-        function enableSpinButton() {
-            const btn = document.getElementById('spinBtn');
-            btn.disabled = false;
-            btn.innerText = 'چرخاندن گردونه';
-            document.getElementById('spinTimer').innerText = '';
+        function claimReward() {
+            currentBalance += 1.00;
+            document.getElementById('balance').innerText = currentBalance.toFixed(2);
+            document.getElementById('claimBtn').disabled = true;
+            document.getElementById('claimBtn').innerText = '✅ پاداش امروز دریافت شد';
         }
 
         function spinWheel() {
             const btn = document.getElementById('spinBtn');
             btn.disabled = true;
 
-            fetch(SERVER_URL + '/api/spin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: userId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    currentRotation += 1440 + Math.floor(Math.random() * 360);
-                    document.getElementById('wheelCircle').style.transform = rotate(${currentRotation}deg);
-                    
-                    setTimeout(() => {
-                        alert('🎉 تبریک! شما مبلغ ' + data.reward + ' USDT برنده شدید!');
-                        document.getElementById('balance').innerText = Number(data.newBalance).toFixed(2);
-                        checkSpinTimer(data.lastSpin);
-                    }, 4000);
-                } else {
-                    alert(data.message);
-                    btn.disabled = false;
-                }
-            });
-        }
+            const prizes = [0.10, 0.25, 0.50, 1.00, 2.00, 5.00];
+            const winAmount = prizes[Math.floor(Math.random() * prizes.length)];
 
-        function claimReward() {
-            fetch(SERVER_URL + '/api/claim', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: userId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    document.getElementById('balance').innerText = Number(data.newBalance).toFixed(2);
-                    checkTimer(data.lastClaim);
-                } else {
-                    alert(data.message);
-                }
-            });
-        }
+            currentRotation += 1440 + Math.floor(Math.random() * 360);
+            document.getElementById('wheelCircle').style.transform = rotate(${currentRotation}deg);
 
-        loadData();
+            setTimeout(() => {
+                currentBalance += winAmount;
+                document.getElementById('balance').innerText = currentBalance.toFixed(2);
+                alert('🎉 تبریک! شما مبلغ ' + winAmount + ' USDT برنده شدید!');
+                btn.innerText = '✅ امروز چرخیده شد';
+            }, 4000);
+        }
     </script>
 </body>
 </html>
