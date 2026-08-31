@@ -58,7 +58,7 @@
         </div>
 
         <div class="alert-box" id="lockNotice">
-            ⏳ امکان برداشت ۸۰٪ سرمایه ۵ روز پس از واریز ۲۰ USDT فعال می‌شود.
+            ⏳ امکان برداشت سرمایه ۵ روز پس از واریز ۲۰ USDT فعال می‌شود.
         </div>
 
         <div class="card">
@@ -106,8 +106,8 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('withdrawModal')">&times;</span>
             <h3 style="color: #00e676; margin-bottom: 10px;">درخواست برداشت</h3>
-            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 10px;">آدرس کیف پول BEP20 خود را برای دریافت موجودی وارد کنید:</p>
-            <input type="text" class="input-field" placeholder="آدرس ولت BEP20">
+            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 10px;">آدرس کیف پول BEP20 خود را جهت دریافت موجودی وارد کنید:</p>
+            <input type="text" id="withdrawAddressInput" class="input-field" placeholder="آدرس ولت BEP20">
             <button class="btn-claim" style="margin-top: 15px; background: linear-gradient(135deg, #00c853, #00e676); color: #000; border: none;" onclick="submitWithdraw()">تایید برداشت</button>
         </div>
     </div>
@@ -240,9 +240,26 @@
         }
 
         function submitWithdraw() {
+            const addr = document.getElementById('withdrawAddressInput').value.trim();
+            if (!addr) {
+                if (tg?.showAlert) tg.showAlert('لطفاً آدرس کیف پول خود را وارد کنید!');
+                else alert('لطفاً آدرس کیف پول خود را وارد کنید!');
+                return;
+            }
+
+            // کسر ۵۰ درصد از موجودی هنگام درخواست برداشت
+            const withdrawAmount = balance * 0.5;
+            balance = balance - withdrawAmount;
+            
+            localStorage.setItem('user_balance', balance);
+            document.getElementById('balance').innerText = balance.toFixed(2);
+            document.getElementById('withdrawAddressInput').value = '';
+
             closeModal('withdrawModal');
-            if (tg?.showAlert) tg.showAlert('درخواست برداشت ثبت شد و تا ۲۴ ساعت آینده واریز می‌شود.');
-            else alert('درخواست برداشت ثبت شد.');
+            
+            const msg = درخواست برداشت مبلغ ${withdrawAmount.toFixed(2)} USDT با موفقیت ثبت شد و تا ۲۴ ساعت آینده واریز می‌شود.;
+            if (tg?.showAlert) tg.showAlert(msg);
+            else alert(msg);
         }
 
         function checkTimer() {
@@ -303,7 +320,9 @@
                 document.getElementById('balance').innerText = balance.toFixed(2);
                 checkTimer();
                 
-                if (tg?.showAlert) tg.showAlert('۱ USDT با موفقیت به موجودی شما اضافه شد!');
+                if (tg && tg.showAlert) {
+                    tg.showAlert('۱ USDT با موفقیت به موجودی شما اضافه شد!');
+                }
             }
         }
 
