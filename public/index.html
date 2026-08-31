@@ -6,18 +6,17 @@
     <title>SiemenS Mini-App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background-color: #0b0d1b; color: #ffffff; display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; }
         .status { color: #00e676; font-size: 16px; font-weight: bold; margin-bottom: 25px; margin-top: 10px; }
         .card { background-color: #14172b; border-radius: 16px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
         .balance-title { color: #7f85a3; font-size: 14px; margin-bottom: 12px; }
-        .balance-val { color: #00e676; font-size: 34px; font-weight: 800; letter-spacing: 0.5px; }
+        .balance-val { color: #00e676; font-size: 34px; font-weight: 800; }
         .reward-title { color: #7f85a3; font-size: 14px; margin-bottom: 14px; }
-        .btn { background-color: #262c54; color: #ffffff; border: none; padding: 14px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-        .btn:active { transform: scale(0.98); opacity: 0.9; }
-        .btn:disabled { background-color: #1d213a; color: #5a607f; cursor: not-allowed; transform: none; }
-        .timer { color: #ffb74d; font-size: 13px; margin-top: 10px; font-weight: 500; }
-        .ref-box { background-color: #0b0d1b; color: #64b5f6; padding: 12px; border-radius: 10px; font-size: 13px; word-break: break-all; margin-top: 12px; border: 1px dashed #262c54; user-select: all; }
+        .btn { background-color: #262c54; color: #ffffff; border: none; padding: 14px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn:disabled { background-color: #1d213a; color: #5a607f; }
+        .timer { color: #ffb74d; font-size: 13px; margin-top: 10px; }
+        .ref-box { background-color: #0b0d1b; color: #64b5f6; padding: 12px; border-radius: 10px; font-size: 13px; word-break: break-all; margin-top: 12px; border: 1px dashed #262c54; }
         .sub-text { color: #ffffff; font-weight: bold; margin-bottom: 10px; }
     </style>
 </head>
@@ -32,48 +31,37 @@
 
     <div class="card">
         <div class="reward-title">پاداش روزانه (۱ USDT)</div>
-        <button class="btn" id="claimBtn" onclick="claimReward()">دریافت پاداش</button>
+        <button class="btn" id="claimBtn">دریافت پاداش</button>
         <div class="timer" id="timer"></div>
     </div>
 
     <div class="card">
         <div class="reward-title">دعوت از دوستان (۰.۵ USDT پاداش)</div>
-        <div class="sub-text">تعداد زیرمجموعه‌ها: <span id="refCount">0</span> نفر</div>
-        <div class="ref-box" id="refLink">در حال دریافت لینک...</div>
+        <div class="sub-text">تعداد زیرمجموعه‌ها: 0 نفر</div>
+        <div class="ref-box" id="refLink">https://t.me/SiemenS_bot</div>
     </div>
 
     <script>
-        let userId = '6559439220';
-        try {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.ready();
-                window.Telegram.WebApp.expand();
-                if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                    userId = window.Telegram.WebApp.initDataUnsafe.user.id;
-                }
-            }
-        } catch (e) {}
-
-        document.getElementById('refLink').innerText = https://t.me/SiemenS_bot?start=${userId};
-
         let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
         let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
-        document.getElementById('balance').innerText = balance.toFixed(2);
+        
+        const balanceEl = document.getElementById('balance');
+        const btn = document.getElementById('claimBtn');
+        const timer = document.getElementById('timer');
+        
+        balanceEl.innerText = balance.toFixed(2);
 
-        function updateUI() {
+        function checkTimer() {
             const now = Date.now();
             const COOLDOWN = 24 * 60 * 60 * 1000;
-            const btn = document.getElementById('claimBtn');
-            const timer = document.getElementById('timer');
-
             if (now - lastClaim < COOLDOWN) {
                 btn.disabled = true;
                 btn.innerText = 'دریافت شد';
                 const diff = COOLDOWN - (now - lastClaim);
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const secs = Math.floor((diff % (1000 * 60)) / 1000);
-                timer.innerText = دریافت بعدی: ${hours}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs};
+                const h = Math.floor(diff / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+                timer.innerText = دریافت بعدی: ${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s};
             } else {
                 btn.disabled = false;
                 btn.innerText = 'دریافت پاداش';
@@ -81,7 +69,7 @@
             }
         }
 
-        function claimReward() {
+        btn.addEventListener('click', function() {
             const now = Date.now();
             const COOLDOWN = 24 * 60 * 60 * 1000;
             if (now - lastClaim >= COOLDOWN) {
@@ -89,13 +77,13 @@
                 lastClaim = now;
                 localStorage.setItem('user_balance', balance);
                 localStorage.setItem('last_claim', lastClaim);
-                document.getElementById('balance').innerText = balance.toFixed(2);
-                updateUI();
+                balanceEl.innerText = balance.toFixed(2);
+                checkTimer();
             }
-        }
+        });
 
-        updateUI();
-        setInterval(updateUI, 1000);
+        checkTimer();
+        setInterval(checkTimer, 1000);
     </script>
 </body>
 </html>
