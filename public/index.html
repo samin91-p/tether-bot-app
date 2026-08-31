@@ -2,230 +2,192 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SiemenS Mini-App</title>
-    <!-- کتابخانه رسمی تلگرام -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #0f1026; color: #fff; margin: 0; padding: 20px 15px 90px 15px; display: flex; flex-direction: column; align-items: center; user-select: none; }
-        
-        .card { background: linear-gradient(145deg, #181b3a, #131530); border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .balance-title { color: #8a92b2; font-size: 14px; margin-bottom: 5px; }
-        .balance-val { color: #00e676; font-size: 38px; font-weight: 800; letter-spacing: 1px; }
-        
-        .action-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 15px; }
-        .btn-action { flex: 1; padding: 14px; border-radius: 14px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-deposit { background: linear-gradient(135deg, #00c853, #00e676); color: #000; }
-        .btn-withdraw { background: #1c2040; color: #8a92b2; border: 1px solid #2d3361; }
-        
-        .alert-box { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); color: #ffb74d; border-radius: 12px; padding: 12px; width: 100%; max-width: 380px; font-size: 12px; text-align: center; margin-bottom: 15px; }
-        
-        .reward-title { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
-        .reward-sub { font-size: 12px; color: #8a92b2; margin-bottom: 15px; }
-        
-        .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 14px; border-radius: 14px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
-        
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; z-index: 999; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 11px; cursor: pointer; width: 25%; text-align: center; }
-        .nav-item.active { color: #00e676; }
-        .nav-icon { font-size: 18px; }
-
-        .tab-content { display: none; width: 100%; max-width: 380px; }
-        .tab-content.active { display: block; }
-
-        .ref-box { background: #0b0c1e; padding: 12px; border-radius: 10px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 10px; user-select: all; }
-
-        /* پاپ‌آپ‌ها */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 10000; }
-        .modal-content { background: #181b3a; border-radius: 20px; padding: 25px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #2d3361; position: relative; }
-        .close-btn { position: absolute; top: 10px; left: 15px; font-size: 24px; cursor: pointer; color: #8a92b2; padding: 5px; }
-
-        /* گردونه */
-        .wheel-container { position: relative; width: 200px; height: 200px; margin: 15px auto; }
-        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid #ffb74d; z-index: 10; }
-        .wheel-board { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #00e676; background: conic-gradient(#1f244d 0deg 60deg, #161938 60deg 120deg, #1f244d 120deg 180deg, #161938 180deg 240deg, #1f244d 240deg 300deg, #161938 300deg 360deg); transition: transform 4s cubic-bezier(0.15, 0.99, 0.18, 1); position: relative; }
+        body {
+            background-color: #0d0f26;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .status {
+            color: #00e676;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #171a38;
+            border-radius: 15px;
+            padding: 20px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .balance-title {
+            color: #8f93b0;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .balance-val {
+            color: #00e676;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .reward-title {
+            color: #8f93b0;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .btn {
+            background-color: #2b305c;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn:disabled {
+            background-color: #484e5a;
+            color: #9e9e9e;
+            cursor: not-allowed;
+        }
+        .timer {
+            color: #ffb74d;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .ref-link {
+            background-color: #0d0f26;
+            color: #64b5f6;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            word-break: break-all;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- کیف پول -->
-    <div id="tab-wallet" class="tab-content active">
-        <div class="card">
-            <div class="balance-title">موجودی حساب شما</div>
-            <div class="balance-val"><span id="balance">0.00</span> <span style="font-size: 20px;">USDT</span></div>
-        </div>
+    <div class="status" id="status">متصل شد</div>
 
-        <div class="action-btns">
-            <button class="btn-action btn-withdraw" id="btn-withdraw">🔒 برداشت (5 روز مانده)</button>
-            <button class="btn-action btn-deposit" id="btn-deposit">📩 واریز</button>
-        </div>
-
-        <div class="alert-box">
-            ⏳ امکان برداشت ۸۰٪ سرمایه ۵ روز دیگر فعال می‌شود.
-        </div>
-
-        <div class="card">
-            <div class="reward-title">🎁 پاداش روزانه</div>
-            <div class="reward-sub">هر ۲۴ ساعت یک‌بار ۱ USDT دریافت کنید!</div>
-            <button class="btn-claim" id="claimBtn">دریافت پاداش</button>
-        </div>
+    <div class="card">
+        <div class="balance-title">موجودی حساب شما</div>
+        <div class="balance-val">USDT <span id="balance">0.00</span></div>
     </div>
 
-    <!-- گردونه شانس -->
-    <div id="tab-spin" class="tab-content">
-        <div class="card">
-            <div class="reward-title">🎰 گردونه شانس</div>
-            <div class="reward-sub">هر ۲۴ ساعت شانس خود را امتحان کنید!</div>
-            
-            <div class="wheel-container">
-                <div class="wheel-pointer"></div>
-                <div class="wheel-board" id="wheelCircle"></div>
-            </div>
-
-            <button class="btn-claim" id="spinBtn">چرخاندن گردونه</button>
-        </div>
+    <div class="card">
+        <div class="reward-title">پاداش روزانه (۱ USDT)</div>
+        <button class="btn" id="claimBtn" onclick="claimReward()">دریافت پاداش</button>
+        <div class="timer" id="timer"></div>
     </div>
 
-    <!-- بازی -->
-    <div id="tab-game" class="tab-content">
-        <div class="card">
-            <div class="reward-title">🎮 بخش بازی</div>
-            <div class="reward-sub">این بخش به‌زودی فعال می‌شود!</div>
-        </div>
-    </div>
-
-    <!-- دعوت -->
-    <div id="tab-invite" class="tab-content">
-        <div class="card">
-            <div class="reward-title">👥 دعوت از دوستان</div>
-            <div class="reward-sub">با دعوت هر دوست ۰.۵ USDT پاداش بگیرید</div>
-            <div style="margin: 15px 0; font-size: 16px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
-            <div class="ref-box" id="refLink">https://t.me/SiemenS_bot</div>
-        </div>
-    </div>
-
-    <!-- پاپ‌آپ واریز -->
-    <div id="depositModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" id="closeDeposit">&times;</span>
-            <h3 style="color: #00e676; margin-top:0;">واریز USDT (BEP20)</h3>
-            <p style="font-size: 12px; color: #8a92b2;">آدرس زیر را کپی کرده و واریز کنید:</p>
-            <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
-            <button class="btn-claim" style="margin-top: 15px;" id="copyBtn">کپی آدرس ولت</button>
-        </div>
-    </div>
-
-    <!-- پاپ‌آپ برداشت -->
-    <div id="withdrawModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" id="closeWithdraw">&times;</span>
-            <h3 style="color: #ffb74d; margin-top:0;">بخش برداشت</h3>
-            <p style="font-size: 13px; color: #8a92b2;">امکان برداشت در حال حاضر قفل است.<br>لطفاً تا پایان زمان قفل ۵ روزه صبر کنید.</p>
-        </div>
-    </div>
-
-    <!-- منوی پایینی -->
-    <div class="nav-bar">
-        <div class="nav-item active" data-tab="wallet">
-            <span class="nav-icon">💎</span>
-            <span>کیف پول</span>
-        </div>
-        <div class="nav-item" data-tab="game">
-            <span class="nav-icon">🎮</span>
-            <span>بازی</span>
-        </div>
-        <div class="nav-item" data-tab="spin">
-            <span class="nav-icon">🎰</span>
-            <span>گردونه</span>
-        </div>
-        <div class="nav-item" data-tab="invite">
-            <span class="nav-icon">👥</span>
-            <span>دعوت</span>
-        </div>
+    <div class="card">
+        <div class="reward-title">دعوت از دوستان (۰.۵ USDT پاداش)</div>
+        <div>تعداد زیرمجموعه‌ها: <b id="refCount">0</b> نفر</div>
+        <div class="ref-link" id="refLink">در حال دریافت لینک...</div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // فعال‌سازی تلگرام
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.ready();
-                window.Telegram.WebApp.expand();
-            }
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
 
-            let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
-            let currentRotation = 0;
+        const userId = tg?.initDataUnsafe?.user?.id || '123456';
+        const startParam = tg?.initDataUnsafe?.start_param || '';
+        const botUsername = 'SiemenS_bot';
 
-            const balanceEl = document.getElementById('balance');
-            balanceEl.innerText = balance.toFixed(2);
+        const SERVER_URL = 'https://tether-bot-app.onrender.com';
 
-            // اتصال کلیک روی تب‌های پایین
-            document.querySelectorAll('.nav-item').forEach(function(item) {
-                item.addEventListener('click', function() {
-                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        let timerInterval = null;
+
+        function loadUserData() {
+            fetch(${SERVER_URL}/api/user/${userId}?ref=${startParam})
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('balance').innerText = Number(data.balance).toFixed(2);
+                    document.getElementById('refCount').innerText = data.referrals;
+                    document.getElementById('refLink').innerText = https://t.me/${botUsername}?start=${userId};
                     
-                    this.classList.add('active');
-                    const tabName = this.getAttribute('data-tab');
-                    document.getElementById('tab-' + tabName).classList.add('active');
+                    checkTimer(data.lastClaim);
+                })
+                .catch(err => {
+                    document.getElementById('status').innerText = 'خطا در اتصال به سرور';
+                    document.getElementById('status').style.color = '#ff5252';
                 });
+        }
+
+        function checkTimer(lastClaim) {
+            const COOLDOWN = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            const timePassed = now - lastClaim;
+
+            if (lastClaim > 0 && timePassed < COOLDOWN) {
+                startCountdown(COOLDOWN - timePassed);
+            } else {
+                enableButton();
+            }
+        }
+
+        function startCountdown(remainingMs) {
+            const btn = document.getElementById('claimBtn');
+            btn.disabled = true;
+            btn.innerText = 'دریافت شد';
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                remainingMs -= 1000;
+                if (remainingMs <= 0) {
+                    clearInterval(timerInterval);
+                    enableButton();
+                    return;
+                }
+                const hours = String(Math.floor(remainingMs / (1000 * 60 * 60))).padStart(2, '0');
+                const minutes = String(Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                const seconds = String(Math.floor((remainingMs % (1000 * 60)) / 1000)).padStart(2, '0');
+                
+                document.getElementById('timer').innerText = دریافت بعدی: ${hours}:${minutes}:${seconds};
+            }, 1000);
+        }
+
+        function enableButton() {
+            const btn = document.getElementById('claimBtn');
+            btn.disabled = false;
+            btn.innerText = 'دریافت پاداش';
+            document.getElementById('timer').innerText = '';
+        }
+
+        function claimReward() {
+            fetch(${SERVER_URL}/api/claim, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('balance').innerText = Number(data.newBalance).toFixed(2);
+                    checkTimer(data.lastClaim);
+                } else {
+                    alert(data.message);
+                }
             });
+        }
 
-            // دکمه‌های واریز و برداشت
-            document.getElementById('btn-deposit').addEventListener('click', function() {
-                document.getElementById('depositModal').style.display = 'flex';
-            });
-
-            document.getElementById('btn-withdraw').addEventListener('click', function() {
-                document.getElementById('withdrawModal').style.display = 'flex';
-            });
-
-            document.getElementById('closeDeposit').addEventListener('click', function() {
-                document.getElementById('depositModal').style.display = 'none';
-            });
-
-            document.getElementById('closeWithdraw').addEventListener('click', function() {
-                document.getElementById('withdrawModal').style.display = 'none';
-            });
-
-            // کپی آدرس
-            document.getElementById('copyBtn').addEventListener('click', function() {
-                const text = document.getElementById('walletAddress').innerText;
-                navigator.clipboard.writeText(text).then(function() {
-                    alert('آدرس کپی شد!');
-                });
-            });
-
-            // پاداش روزانه
-            document.getElementById('claimBtn').addEventListener('click', function() {
-                balance += 1.0;
-                localStorage.setItem('user_balance', balance);
-                balanceEl.innerText = balance.toFixed(2);
-                this.innerText = '✅ پاداش دریافت شد';
-                this.disabled = true;
-            });
-
-            // گردونه شانس
-            document.getElementById('spinBtn').addEventListener('click', function() {
-                const btn = this;
-                btn.disabled = true;
-
-                const prizes = [0.10, 0.25, 0.50, 1.00, 2.00, 5.00];
-                const prize = prizes[Math.floor(Math.random() * prizes.length)];
-
-                currentRotation += 1440 + Math.floor(Math.random() * 360);
-                document.getElementById('wheelCircle').style.transform = rotate(${currentRotation}deg);
-
-                setTimeout(function() {
-                    balance += prize;
-                    localStorage.setItem('user_balance', balance);
-                    balanceEl.innerText = balance.toFixed(2);
-                    alert('🎉 شما ' + prize + ' USDT برنده شدید!');
-                    btn.innerText = '✅ چرخیده شد';
-                }, 4000);
-            });
-        });
+        loadUserData();
     </script>
 </body>
 </html>
