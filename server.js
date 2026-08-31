@@ -1,217 +1,20 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
+});
+
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 let users = {};
-
-app.get('/', (req, res) => {
-    res.send(`
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SiemenS Mini-App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #0f1026; color: #fff; margin: 0; padding: 20px 15px 90px 15px; display: flex; flex-direction: column; align-items: center; }
-        
-        .card { background: linear-gradient(145deg, #181b3a, #131530); border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .balance-title { color: #8a92b2; font-size: 14px; margin-bottom: 5px; }
-        .balance-val { color: #00e676; font-size: 38px; font-weight: 800; letter-spacing: 1px; }
-        
-        .action-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 15px; }
-        .btn-action { flex: 1; padding: 14px; border-radius: 14px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-deposit { background: linear-gradient(135deg, #00c853, #00e676); color: #000; }
-        .btn-withdraw { background: #1c2040; color: #8a92b2; border: 1px solid #2d3361; }
-        
-        .alert-box { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); color: #ffb74d; border-radius: 12px; padding: 12px; width: 100%; max-width: 380px; font-size: 12px; text-align: center; margin-bottom: 15px; }
-        
-        .reward-title { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
-        .reward-sub { font-size: 12px; color: #8a92b2; margin-bottom: 15px; }
-        
-        .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 14px; border-radius: 14px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
-        
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 11px; text-decoration: none; }
-        .nav-item.active { color: #00e676; }
-        .nav-icon { font-size: 18px; }
-
-        .tab-content { display: none; width: 100%; max-width: 380px; }
-        .tab-content.active { display: block; }
-
-        .ref-box { background: #0b0c1e; padding: 12px; border-radius: 10px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 10px; }
-    </style>
-</head>
-<body>
-
-    <!-- تب کیف پول (صفحه اصلی) -->
-    <div id="tab-wallet" class="tab-content active">
-        <div class="card">
-            <div class="balance-title">موجودی حساب شما</div>
-            <div class="balance-val"><span id="balance">0.00</span> <span style="font-size: 20px;">USDT</span></div>
-        </div>
-
-        <div class="action-btns">
-            <button class="btn-action btn-withdraw">🔒 برداشت (5 روز مانده)</button>
-            <button class="btn-action btn-deposit">📩 واریز</button>
-        </div>
-
-        <div class="alert-box">
-            ⏳ امکان برداشت ۸۰٪ سرمایه ۵ روز دیگر فعال می‌شود.
-        </div>
-
-        <div class="card">
-            <div class="reward-title">🎁 پاداش روزانه</div>
-            <div class="reward-sub">هر ۲۴ ساعت یک‌بار ۱ USDT دریافت کنید!</div>
-            <button class="btn-claim" id="claimBtn" onclick="claimReward()">دریافت پاداش</button>
-            <div id="timer" style="margin-top: 10px; font-size: 13px; color: #ffb74d;"></div>
-        </div>
-    </div>
-
-    <!-- تب دعوت -->
-    <div id="tab-invite" class="tab-content">
-        <div class="card">
-            <div class="reward-title">👥 دعوت از دوستان</div>
-            <div class="reward-sub">با دعوت هر دوست ۰.۵ USDT پاداش بگیرید</div>
-            <div style="margin: 15px 0; font-size: 16px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
-            <div class="ref-box" id="refLink">در حال دریافت لینک...</div>
-        </div>
-    </div>
-
-    <!-- تب بازی -->
-    <div id="tab-game" class="tab-content">
-        <div class="card">
-            <div class="reward-title">🎮 بخش بازی</div>
-            <div class="reward-sub">این بخش به زودی فعال می‌شود!</div>
-        </div>
-    </div>
-
-    <!-- تب گردونه -->
-    <div id="tab-spin" class="tab-content">
-        <div class="card">
-            <div class="reward-title">🎰 گردونه شانس</div>
-            <div class="reward-sub">این بخش به زودی فعال می‌شود!</div>
-        </div>
-    </div>
-
-    <!-- منوی پایینی -->
-    <div class="nav-bar">
-        <div class="nav-item active" onclick="switchTab('wallet', this)">
-            <span class="nav-icon">💎</span>
-            <span>کیف پول</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('game', this)">
-            <span class="nav-icon">🎮</span>
-            <span>بازی</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('spin', this)">
-            <span class="nav-icon">🎰</span>
-            <span>گردونه</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('invite', this)">
-            <span class="nav-icon">👥</span>
-            <span>دعوت</span>
-        </div>
-    </div>
-
-    <script>
-        const tg = window.Telegram?.WebApp;
-        if(tg) { tg.ready(); tg.expand(); }
-        
-        const userId = String(tg?.initDataUnsafe?.user?.id || '123456');
-        const botUsername = "SiemenS_bot"; 
-        const startParam = tg?.initDataUnsafe?.start_param || '';
-
-        let timerInterval = null;
-
-        function switchTab(tabName, el) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            
-            document.getElementById('tab-' + tabName).classList.add('active');
-            el.classList.add('active');
-        }
-
-        function loadData() {
-            fetch('/api/user/' + userId + '?ref=' + startParam)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('balance').innerText = Number(data.balance || 0).toFixed(2);
-                    document.getElementById('refCount').innerText = data.referrals || 0;
-                    document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
-
-                    checkTimer(data.lastClaim || 0);
-                });
-        }
-
-        function checkTimer(lastClaim) {
-            const COOLDOWN = 24 * 60 * 60 * 1000;
-            const now = Date.now();
-            const timePassed = now - lastClaim;
-
-            if (lastClaim > 0 && timePassed < COOLDOWN) {
-                startCountdown(COOLDOWN - timePassed);
-            } else {
-                enableButton();
-            }
-        }
-
-        function startCountdown(remainingMs) {
-            const btn = document.getElementById('claimBtn');
-            btn.disabled = true;
-            btn.innerText = '✅ پاداش امروز دریافت شد';
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                remainingMs -= 1000;
-                if (remainingMs <= 0) {
-                    clearInterval(timerInterval);
-                    enableButton();
-                    return;
-                }
-                const hours = Math.floor(remainingMs / (1000 * 60 * 60));
-                const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
-                
-                document.getElementById('timer').innerText = 'دریافت بعدی: ' + hours + ':' + minutes + ':' + seconds;
-            }, 1000);
-        }
-
-        function enableButton() {
-            const btn = document.getElementById('claimBtn');
-            btn.disabled = false;
-            btn.innerText = 'دریافت پاداش';
-            document.getElementById('timer').innerText = '';
-        }
-
-        function claimReward() {
-            fetch('/api/claim', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: userId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    document.getElementById('balance').innerText = Number(data.newBalance).toFixed(2);
-                    checkTimer(data.lastClaim);
-                } else {
-                    alert(data.message);
-                }
-            });
-        }
-
-        loadData();
-    </script>
-</body>
-</html>
-    `);
-});
 
 app.get('/api/user/:id', (req, res) => {
     const id = String(req.params.id || '123456');
@@ -244,4 +47,6 @@ app.post('/api/claim', (req, res) => {
     res.json({ success: true, newBalance: user.balance, lastClaim: user.lastClaim });
 });
 
-app.listen(PORT, () => console.log('Server running on port ' + PORT));
+app.listen(PORT, function() {
+    console.log('Server running on port ' + PORT);
+});
