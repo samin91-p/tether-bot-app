@@ -1,7 +1,22 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// لینک اتصال اختصاصی دیتابیس MongoDB شما
+const MONGO_URI = 'mongodb+srv://saminjorj_db_user:nVETBguTpDjpj3u5@cluster0.gb7umvk.mongodb.net/tetherbot?retryWrites=true&w=majority';
+
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('MongoDB Connected successfully!'))
+    .catch(err => console.error('MongoDB Connection Error:', err));
+
+const userSchema = new mongoose.Schema({
+    userId: { type: String, required: true, unique: true },
+    balance: { type: Number, default: 0.00 }
+});
+
+const User = mongoose.model('User', userSchema);
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -12,23 +27,33 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
-const users = {};
-
-// سرو کردن مستقیم فایل‌های فرانت‌انداز خود سرور
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/api/user/:id', (req, res) => {
-    const userId = req.params.id;
-    if (!users[userId]) users[userId] = { balance: 0.00 };
-    res.json(users[userId]);
+app.get('/api/user/:id', async (req, res) => {
+    try {
+        let user = await User.findOne({ userId: req.params.id });
+        if (!user) {
+            user = await User.create({ userId: req.params.id, balance: 0.00 });
+        }
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ error: 'Database Error' });
+    }
 });
 
-app.post('/api/claim', (req, res) => {
-    const { userId } = req.body;
-    if (!users[userId]) users[userId] = { balance: 0.00 };
-    users[userId].balance += 1.00;
-    res.json({ success: true, newBalance: users[userId].balance });
+app.post('/api/claim', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        let user = await User.findOne({ userId });
+        if (!user) {
+            user = await User.create({ userId, balance: 0.00 });
+        }
+        user.balance += 1.00;
+        await user.save();
+        res.json({ success: true, newBalance: user.balance });
+    } catch (err) {
+        res.status(500).json({ error: 'Database Error' });
+    }
 });
 
 app.listen(PORT, () => console.log('Server running on port ' + PORT));
