@@ -79,9 +79,10 @@
     <div id="tab-invite" class="tab-content">
         <div class="card">
             <div class="reward-title">👥 Invite Friends</div>
-            <div class="reward-sub">Earn 0.5 USDT for each valid referral</div>
-            <div style="margin: 10px 0; font-size: 14px;">Total Referrals: <b id="refCount" style="color: #00e676;">0</b></div>
+            <div class="reward-sub">Earn 0.5 USDT when your friend deposits at least 20 USDT</div>
+            <div style="margin: 10px 0; font-size: 14px;">Valid Referrals: <b id="refCount" style="color: #00e676;">0</b></div>
             <div class="ref-box" id="refLink">Loading referral link...</div>
+            <button class="btn-claim" style="margin-top: 12px;" id="copyRefBtn">Copy Referral Link</button>
         </div>
     </div>
 
@@ -136,6 +137,7 @@
 
             let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
             let totalDeposited = parseFloat(localStorage.getItem('total_deposited') || '20.00');
+            let refCount = parseInt(localStorage.getItem('ref_count') || '0');
             let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
             let lastLucky = parseInt(localStorage.getItem('last_lucky') || '0');
             let depositTime = parseInt(localStorage.getItem('deposit_time') || Date.now());
@@ -177,6 +179,14 @@
                     navigator.clipboard.writeText(addr);
                 }
                 alert('Wallet address copied!');
+            });
+
+            bindClick('copyRefBtn', function() {
+                const link = 'https://t.me/' + botUsername + '?start=' + userId;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(link);
+                }
+                alert('Referral link copied!');
             });
 
             bindClick('withdrawBtn', function() {
@@ -249,6 +259,7 @@
             function render() {
                 document.getElementById('balance').innerText = balance.toFixed(2);
                 document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
+                document.getElementById('refCount').innerText = refCount;
 
                 const COOLDOWN = 24 * 60 * 60 * 1000;
                 const now = Date.now();
