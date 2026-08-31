@@ -84,7 +84,6 @@
             <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">Copy the address below and deposit at least 20 USDT:</p>
             <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
             <button class="btn-claim" style="margin-top: 12px;" id="copyBtn">Copy Address</button>
-            <button class="btn-claim" style="margin-top: 8px; background: #29b6f6; color: #000; border: none;" id="simDepositBtn">Test: Simulate 20 USDT Deposit</button>
         </div>
     </div>
 
@@ -127,9 +126,9 @@
             const botUsername = "SiemenS_bot"; 
 
             let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
-            let totalDeposited = parseFloat(localStorage.getItem('total_deposited') || '0.00');
+            let totalDeposited = parseFloat(localStorage.getItem('total_deposited') || '20.00');
             let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
-            let depositTime = parseInt(localStorage.getItem('deposit_time') || '0');
+            let depositTime = parseInt(localStorage.getItem('deposit_time') || Date.now());
 
             function bindClick(id, fn) {
                 const el = document.getElementById(id);
@@ -168,20 +167,6 @@
                     navigator.clipboard.writeText(addr);
                 }
                 alert('Wallet address copied!');
-            });
-
-            bindClick('simDepositBtn', function() {
-                totalDeposited = 20.0;
-                balance += 20.0;
-                depositTime = Date.now();
-                
-                localStorage.setItem('total_deposited', totalDeposited);
-                localStorage.setItem('user_balance', balance);
-                localStorage.setItem('deposit_time', depositTime);
-                
-                hideModal('depositModal');
-                alert('20 USDT Deposit registered! 5-day lock activated.');
-                render();
             });
 
             bindClick('withdrawBtn', function() {
