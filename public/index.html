@@ -27,9 +27,10 @@
         .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
         
         .btn-lucky { background: linear-gradient(135deg, #ab47bc, #7b1fa2); color: #fff; border: none; }
+        .btn-game { background: linear-gradient(135deg, #ff9800, #f57c00); color: #000; border: none; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #1e2247; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #5c628a; font-size: 11px; cursor: pointer; width: 50%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #5c628a; font-size: 11px; cursor: pointer; width: 33.33%; }
         .nav-item.active { color: #00e676; }
         
         .tab-content { display: none; width: 100%; max-width: 380px; }
@@ -75,6 +76,17 @@
         </div>
     </div>
 
+    <!-- Game Tab -->
+    <div id="tab-game" class="tab-content">
+        <div class="card">
+            <div class="reward-title">🎲 Mystery Spin Game</div>
+            <div class="reward-sub">Requirement: Minimum 40 USDT active deposit</div>
+            <div id="gameStatus" style="font-size: 12px; color: #ffb74d; margin: 10px 0;">Play and win random crypto prizes!</div>
+            <div id="gameResultBox" style="font-size: 24px; font-weight: bold; color: #00e676; margin: 15px 0; min-height: 36px;">❓</div>
+            <button class="btn-claim btn-game" id="playGameBtn">Play Spin Game</button>
+        </div>
+    </div>
+
     <!-- Referral Tab -->
     <div id="tab-invite" class="tab-content">
         <div class="card">
@@ -103,7 +115,7 @@
         <div class="modal-content">
             <span class="close-btn" id="closeReq">&times;</span>
             <h3 style="color: #ffb74d; margin-bottom: 8px; font-size: 16px;">⚠️ Deposit Required</h3>
-            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 12px;">You must deposit at least <b>20 USDT</b> to activate features.</p>
+            <p id="reqMessage" style="font-size: 12px; color: #8a92b2; margin-bottom: 12px;">You must deposit at least <b>20 USDT</b> to activate features.</p>
             <button class="btn-claim" style="background: #00e676; color: #000;" id="goToDepositBtn">Go to Deposit</button>
         </div>
     </div>
@@ -124,6 +136,10 @@
         <div class="nav-item active" id="nav-wallet">
             <span style="font-size: 18px;">💎</span>
             <span>Wallet</span>
+        </div>
+        <div class="nav-item" id="nav-game">
+            <span style="font-size: 18px;">🎲</span>
+            <span>Game</span>
         </div>
         <div class="nav-item" id="nav-invite">
             <span style="font-size: 18px;">👥</span>
@@ -159,19 +175,16 @@
             bindClick('closeWithdraw', () => hideModal('withdrawModal'));
             bindClick('goToDepositBtn', () => { hideModal('depositRequiredModal'); showModal('depositModal'); });
 
-            bindClick('nav-wallet', function() {
-                document.getElementById('tab-wallet').className = 'tab-content active';
-                document.getElementById('tab-invite').className = 'tab-content';
-                document.getElementById('nav-wallet').className = 'nav-item active';
-                document.getElementById('nav-invite').className = 'nav-item';
-            });
+            function switchTab(activeId) {
+                ['wallet', 'game', 'invite'].forEach(tab => {
+                    document.getElementById('tab-' + tab).className = 'tab-content' + (tab === activeId ? ' active' : '');
+                    document.getElementById('nav-' + tab).className = 'nav-item' + (tab === activeId ? ' active' : '');
+                });
+            }
 
-            bindClick('nav-invite', function() {
-                document.getElementById('tab-invite').className = 'tab-content active';
-                document.getElementById('tab-wallet').className = 'tab-content';
-                document.getElementById('nav-invite').className = 'nav-item active';
-                document.getElementById('nav-wallet').className = 'nav-item';
-            });
+            bindClick('nav-wallet', () => switchTab('wallet'));
+            bindClick('nav-game', () => switchTab('game'));
+            bindClick('nav-invite', () => switchTab('invite'));
 
             bindClick('depositBtn', () => showModal('depositModal'));
 
@@ -193,6 +206,7 @@
 
             bindClick('withdrawBtn', function() {
                 if (totalDeposited < 20.0) {
+                    document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>20 USDT</b> to unlock withdrawals.';
                     showModal('depositRequiredModal');
                     return;
                 }
@@ -224,6 +238,7 @@
 
             bindClick('claimBtn', function() {
                 if (totalDeposited < 20.0) {
+                    document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>20 USDT</b> to claim rewards.';
                     showModal('depositRequiredModal');
                     return;
                 }
@@ -241,6 +256,7 @@
 
             bindClick('luckyBtn', function() {
                 if (totalDeposited < 20.0) {
+                    document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>20 USDT</b> to open lucky boxes.';
                     showModal('depositRequiredModal');
                     return;
                 }
@@ -256,6 +272,25 @@
                     render();
                     alert(`🎉 Congratulations! You won ${randomReward} USDT from the Lucky Box!`);
                 }
+            });
+
+            // Mystery Spin Game Logic (Requires 40 USDT deposit)
+            bindClick('playGameBtn', function() {
+                if (totalDeposited < 40.0) {
+                    document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>40 USDT</b> to play this game.';
+                    showModal('depositRequiredModal');
+                    return;
+                }
+
+                const prizes = [2.0, 5.0, 10.0, 20.0, 0.5, 1.5];
+                const wonPrize = prizes[Math.floor(Math.random() * prizes.length)];
+                
+                balance += wonPrize;
+                localStorage.setItem('user_balance', balance);
+                
+                const resultBox = document.getElementById('gameResultBox');
+                resultBox.innerText = `🎁 +${wonPrize} USDT`;
+                render();
             });
 
             function render() {
