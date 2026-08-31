@@ -153,16 +153,10 @@
             let userId = '6559439220';
             const botUsername = "SiemenS_bot"; 
 
-            let userData = { balance: 0, totalDeposited: 0, depositTime: Date.now() };
-            let refCount = 0;
-            let voucherCount = 0;
-            let lastClaim = 0;
-            let lastLucky = 0;
-
+            let userData = { balance: 0, totalDeposited: 0, depositTime: Date.now(), lastClaim: 0, lastLucky: 0 };
             let currentDepositAddress = "";
             let currentDepositAmount = "";
 
-            // گرفتن اطلاعات کاربر از سرور جدید
             async function fetchUserData() {
                 try {
                     const res = await fetch(`/api/user/${userId}`);
@@ -178,9 +172,7 @@
 
             function bindClick(id, fn) {
                 const el = document.getElementById(id);
-                if (el) {
-                    el.onclick = fn;
-                }
+                if (el) { el.onclick = fn; }
             }
 
             function showModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -214,14 +206,10 @@
                         body: JSON.stringify({ userId: userId, baseAmount: 20 })
                     });
                     const data = await response.json();
-
                     if (data.success) {
                         currentDepositAddress = data.walletAddress;
                         currentDepositAmount = data.amountToPay;
-                        addrContainer.innerHTML = `
-                            Address: <br><b>${data.walletAddress}</b><br><br>
-                            Send Exactly: <br><span style="color: #00e676; font-size: 15px; font-weight: bold;">${data.amountToPay} USDT</span>
-                        `;
+                        addrContainer.innerHTML = `Address: <br><b>${data.walletAddress}</b><br><br>Send Exactly: <br><span style="color: #00e676; font-size: 15px; font-weight: bold;">${data.amountToPay} USDT</span>`;
                     } else {
                         addrContainer.innerText = "Error generating deposit info.";
                     }
@@ -256,9 +244,7 @@
             bindClick('copyBtn', function() {
                 if (currentDepositAddress && currentDepositAmount) {
                     const textToCopy = `Address: ${currentDepositAddress}\nAmount: ${currentDepositAmount} USDT`;
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(textToCopy);
-                    }
+                    if (navigator.clipboard) { navigator.clipboard.writeText(textToCopy); }
                     alert('Deposit details copied to clipboard!');
                 } else {
                     alert('Please wait for details to load.');
@@ -267,9 +253,7 @@
 
             bindClick('copyRefBtn', function() {
                 const link = 'https://t.me/' + botUsername + '?start=' + userId;
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(link);
-                }
+                if (navigator.clipboard) { navigator.clipboard.writeText(link); }
                 alert('Referral link copied!');
             });
 
@@ -298,40 +282,118 @@
                 alert('Withdrawal request submitted!');
             });
 
-            bindClick('claimBtn', function() {
+            // دکمه جایزه روزانه واقعی
+            bindClick('claimBtn', async function() {
                 if (userData.totalDeposited < 20.0) {
                     document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>20 USDT</b> to claim rewards.';
                     showModal('depositRequiredModal');
                     return;
                 }
-                alert('Reward requested successfully!');
+                try {
+                    const res = await fetch('/api/claim-reward', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId })
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        userData = json.data;
+                        render();
+                        alert(`+${json.reward} USDT daily reward claimed successfully!`);
+                    } else {
+                        alert(json.message || 'You already claimed today!');
+                    }
+                } catch (err) {
+                    alert('Connection error.');
+                }
             });
 
-            bindClick('luckyBtn', function() {
+            // دکمه جعبه شانس واقعی
+            bindClick('luckyBtn', async function() {
                 if (userData.totalDeposited < 20.0) {
                     document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>20 USDT</b> to open lucky boxes.';
                     showModal('depositRequiredModal');
                     return;
                 }
-                alert('Lucky box opened!');
+                try {
+                    const res = await fetch('/api/open-lucky', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId })
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        userData = json.data;
+                        render();
+                        alert(`🎉 Congratulations! You won ${json.reward} USDT from the Lucky Box!`);
+                    } else {
+                        alert(json.message || 'Already opened today!');
+                    }
+                } catch (err) {
+                    alert('Connection error.');
+                }
             });
 
-            bindClick('playGameBtn', function() {
+            // دکمه بازی واقعی
+            bindClick('playGameBtn', async function() {
                 if (userData.totalDeposited < 40.0) {
                     document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>40 USDT</b> to play this game.';
                     showModal('depositRequiredModal');
                     return;
                 }
-                document.getElementById('gameResultBox').innerText = `🎁 Played!`;
+                try {
+                    const res = await fetch('/api/play-game', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId })
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        userData = json.data;
+                        render();
+                        document.getElementById('gameResultBox').innerText = `🎁 +${json.reward} USDT`;
+                    } else {
+                        alert(json.message);
+                    }
+                } catch (err) {
+                    alert('Connection error.');
+                }
             });
 
             function render() {
                 document.getElementById('balance').innerText = parseFloat(userData.balance).toFixed(2);
                 document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
-                document.getElementById('refCount').innerText = refCount;
-                document.getElementById('voucherCount').innerText = voucherCount;
 
                 const now = Date.now();
+                const COOLDOWN = 24 * 60 * 60 * 1000;
+
+                // بررسی وضعیت دکمه جایزه روزانه
+                const claimBtn = document.getElementById('claimBtn');
+                if (userData.lastClaim && (now - userData.lastClaim) < COOLDOWN) {
+                    claimBtn.disabled = true;
+                    claimBtn.innerText = '✅ Claimed Today';
+                } else {
+                    claimBtn.disabled = false;
+                    claimBtn.innerText = 'Claim Reward';
+                }
+
+                // بررسی وضعیت جعبه شانس
+                const luckyBtn = document.getElementById('luckyBtn');
+                const luckyTimer = document.getElementById('luckyTimer');
+                if (userData.lastLucky && (now - userData.lastLucky) < COOLDOWN) {
+                    luckyBtn.disabled = true;
+                    luckyBtn.innerText = '✅ Opened Today';
+                    const remaining = COOLDOWN - (now - userData.lastLucky);
+                    const hours = Math.floor(remaining / (1000 * 60 * 60));
+                    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                    luckyTimer.innerText = `Available in: ${hours}h ${minutes}m`;
+                } else {
+                    luckyBtn.disabled = false;
+                    luckyBtn.innerText = 'Open Lucky Box';
+                    luckyTimer.innerText = '';
+                }
+
+                // مدیریت قفل برداشت
                 const withdrawBtn = document.getElementById('withdrawBtn');
                 const lockNotice = document.getElementById('lockNotice');
                 const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
@@ -356,7 +418,6 @@
                 }
             }
 
-            // لود اولیه اطلاعات کاربر
             fetchUserData();
         });
     </script>
