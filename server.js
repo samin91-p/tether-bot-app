@@ -34,7 +34,22 @@ app.post('/api/create-invoice', (req, res) => {
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+// دریافت درخواست بررسی پرداخت از کاربر
+app.post('/api/verify-payment', (req, res) => {
+    try {
+        const { userId, amountToPay } = req.body;
+        
+        // اینجا می‌توانید اطلاعات پرداخت را در کنسول ببینید یا به تلگرام خودتان بفرستید
+        console.log(`درخواست بررسی واریز برای کاربر: ${userId} با مبلغ: ${amountToPay}`);
 
+        res.json({ 
+            success: true, 
+            message: "Payment verification request sent successfully" 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
 app.listen(PORT, () => {
    console.log(`Server is running on port ${PORT}`);
 });
