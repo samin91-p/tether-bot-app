@@ -152,14 +152,26 @@
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             const urlParams = new URLSearchParams(window.location.search);
-            let userId = '6559439220'; 
             
+            // گرفتن دقیق آیدی واقعی کاربر از تلگرام وب‌اپ
+            let userId = null;
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
                 userId = String(window.Telegram.WebApp.initDataUnsafe.user.id);
             }
 
+            // اگر کاربر از طریق مرورگر معمولی یا تست باز کرد، یک آیدی محلی منحصربه‌فرد بسازیم تا با بقیه تداخل نکند
+            if (!userId) {
+                userId = localStorage.getItem('temp_user_id');
+                if (!userId) {
+                    userId = 'user_' + Math.floor(Math.random() * 1000000000);
+                    localStorage.setItem('temp_user_id', userId);
+                }
+            }
+
+            console.log("Active Telegram User ID:", userId);
+
             let startParam = urlParams.get('start');
-            const botUsername = "SiemenSUSDT_bot"; // اصلاح یوزرنیم ربات
+            const botUsername = "SiemenSUSDT_bot";
 
             let userData = { balance: 0, totalDeposited: 0, depositTime: Date.now(), lastClaim: 0, lastLucky: 0, lastGame: 0, validReferrals: 0, vouchers: 0 };
             let currentDepositAddress = "";
