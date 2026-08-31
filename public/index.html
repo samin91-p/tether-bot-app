@@ -6,84 +6,242 @@
     <title>SiemenS Mini-App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background-color: #0b0d1b; color: #ffffff; display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; }
-        .status { color: #00e676; font-size: 16px; font-weight: bold; margin-bottom: 25px; margin-top: 10px; }
-        .card { background-color: #14172b; border-radius: 16px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
-        .balance-title { color: #7f85a3; font-size: 14px; margin-bottom: 12px; }
-        .balance-val { color: #00e676; font-size: 34px; font-weight: 800; }
-        .reward-title { color: #7f85a3; font-size: 14px; margin-bottom: 14px; }
-        .btn { background-color: #262c54; color: #ffffff; border: none; padding: 14px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn:disabled { background-color: #1d213a; color: #5a607f; }
-        .timer { color: #ffb74d; font-size: 13px; margin-top: 10px; }
-        .ref-box { background-color: #0b0d1b; color: #64b5f6; padding: 12px; border-radius: 10px; font-size: 13px; word-break: break-all; margin-top: 12px; border: 1px dashed #262c54; }
-        .sub-text { color: #ffffff; font-weight: bold; margin-bottom: 10px; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #0f1026; color: #fff; padding: 20px 15px 90px 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        .card { background: linear-gradient(145deg, #181b3a, #131530); border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .balance-title { color: #8a92b2; font-size: 14px; margin-bottom: 5px; }
+        .balance-val { color: #00e676; font-size: 38px; font-weight: 800; letter-spacing: 1px; }
+        
+        .action-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 15px; }
+        .btn-action { flex: 1; padding: 14px; border-radius: 14px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-deposit { background: linear-gradient(135deg, #00c853, #00e676); color: #000; }
+        .btn-withdraw { background: #1c2040; color: #8a92b2; border: 1px solid #2d3361; }
+        
+        .alert-box { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); color: #ffb74d; border-radius: 12px; padding: 12px; width: 100%; max-width: 380px; font-size: 12px; text-align: center; margin-bottom: 15px; }
+        
+        .reward-title { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+        .reward-sub { font-size: 12px; color: #8a92b2; margin-bottom: 15px; }
+        
+        .btn-claim { background: #20264d; color: #00e676; border: 1px solid #00e676; padding: 14px; border-radius: 14px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-claim:disabled { background: #161936; color: #5c628a; border-color: #2a2f57; cursor: not-allowed; }
+        
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #12142d; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e2247; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #5c628a; font-size: 11px; cursor: pointer; }
+        .nav-item.active { color: #00e676; }
+        .nav-icon { font-size: 18px; }
+
+        .tab-content { display: none; width: 100%; max-width: 380px; }
+        .tab-content.active { display: block; }
+
+        .ref-box { background: #0b0c1e; padding: 12px; border-radius: 10px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 10px; user-select: all; border: 1px dashed #2d3361; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #181b3a; border-radius: 20px; padding: 25px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #2d3361; position: relative; }
+        .close-btn { position: absolute; top: 10px; left: 15px; font-size: 20px; cursor: pointer; color: #8a92b2; }
     </style>
 </head>
 <body>
 
-    <div class="status">متصل شد</div>
+    <!-- کیف پول -->
+    <div id="tab-wallet" class="tab-content active">
+        <div class="card">
+            <div class="balance-title">موجودی حساب شما</div>
+            <div class="balance-val"><span id="balance">0.00</span> <span style="font-size: 20px;">USDT</span></div>
+        </div>
 
-    <div class="card">
-        <div class="balance-title">موجودی حساب شما</div>
-        <div class="balance-val">USDT <span id="balance">0.00</span></div>
+        <div class="action-btns">
+            <button class="btn-action btn-withdraw" onclick="openModal('withdrawModal')">🔒 برداشت (5 روز مانده)</button>
+            <button class="btn-action btn-deposit" onclick="openModal('depositModal')">📩 واریز</button>
+        </div>
+
+        <div class="alert-box">
+            ⏳ امکان برداشت ۸۰٪ سرمایه ۵ روز دیگر فعال می‌شود.
+        </div>
+
+        <div class="card">
+            <div class="reward-title">🎁 پاداش روزانه</div>
+            <div class="reward-sub">هر ۲۴ ساعت یک‌بار ۱ USDT دریافت کنید!</div>
+            <button class="btn-claim" id="claimBtn" onclick="claimReward()">دریافت پاداش</button>
+            <div id="timer" style="margin-top: 10px; font-size: 13px; color: #ffb74d;"></div>
+        </div>
     </div>
 
-    <div class="card">
-        <div class="reward-title">پاداش روزانه (۱ USDT)</div>
-        <button class="btn" id="claimBtn">دریافت پاداش</button>
-        <div class="timer" id="timer"></div>
+    <!-- دعوت -->
+    <div id="tab-invite" class="tab-content">
+        <div class="card">
+            <div class="reward-title">👥 دعوت از دوستان</div>
+            <div class="reward-sub">با دعوت هر دوست ۰.۵ USDT پاداش بگیرید</div>
+            <div style="margin: 15px 0; font-size: 16px;">تعداد زیرمجموعه‌ها: <b id="refCount" style="color: #00e676;">0</b> نفر</div>
+            <div class="ref-box" id="refLink">در حال بارگذاری...</div>
+        </div>
     </div>
 
-    <div class="card">
-        <div class="reward-title">دعوت از دوستان (۰.۵ USDT پاداش)</div>
-        <div class="sub-text">تعداد زیرمجموعه‌ها: 0 نفر</div>
-        <div class="ref-box" id="refLink">https://t.me/SiemenS_bot</div>
+    <!-- بازی -->
+    <div id="tab-game" class="tab-content">
+        <div class="card">
+            <div class="reward-title">🎮 بخش بازی</div>
+            <div class="reward-sub">این بخش به زودی فعال می‌شود!</div>
+        </div>
+    </div>
+
+    <!-- گردونه -->
+    <div id="tab-spin" class="tab-content">
+        <div class="card">
+            <div class="reward-title">🎰 گردونه شانس</div>
+            <div class="reward-sub">این بخش به زودی فعال می‌شود!</div>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ واریز -->
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('depositModal')">&times;</span>
+            <h3 style="color: #00e676; margin-bottom: 10px;">واریز USDT (BEP20)</h3>
+            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 10px;">آدرس زیر را کپی کرده و روی شبکه BSC واریز کنید:</p>
+            <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
+            <button class="btn-claim" style="margin-top: 15px;" onclick="copyAddress()">کپی آدرس ولت</button>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ برداشت -->
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('withdrawModal')">&times;</span>
+            <h3 style="color: #ffb74d; margin-bottom: 10px;">بخش برداشت</h3>
+            <p style="font-size: 13px; color: #8a92b2;">امکان برداشت در حال حاضر قفل است.<br>لطفاً تا پایان زمان قفل ۵ روزه صبر کنید.</p>
+        </div>
+    </div>
+
+    <!-- منو -->
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="switchTab('wallet', this)">
+            <span class="nav-icon">💎</span>
+            <span>کیف پول</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('game', this)">
+            <span class="nav-icon">🎮</span>
+            <span>بازی</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('spin', this)">
+            <span class="nav-icon">🎰</span>
+            <span>گردونه</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('invite', this)">
+            <span class="nav-icon">👥</span>
+            <span>دعوت</span>
+        </div>
     </div>
 
     <script>
-        let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
-        let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
+        const tg = window.Telegram?.WebApp;
+        let userId = '6559439220';
         
-        const balanceEl = document.getElementById('balance');
-        const btn = document.getElementById('claimBtn');
-        const timer = document.getElementById('timer');
-        
-        balanceEl.innerText = balance.toFixed(2);
+        try {
+            if (tg) {
+                tg.ready();
+                tg.expand();
+                if (tg.initDataUnsafe?.user?.id) {
+                    userId = tg.initDataUnsafe.user.id;
+                }
+            }
+        } catch(e) {}
 
-        function checkTimer() {
-            const now = Date.now();
-            const COOLDOWN = 24 * 60 * 60 * 1000;
-            if (now - lastClaim < COOLDOWN) {
-                btn.disabled = true;
-                btn.innerText = 'دریافت شد';
-                const diff = COOLDOWN - (now - lastClaim);
-                const h = Math.floor(diff / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((diff % (1000 * 60)) / 1000);
-                timer.innerText = دریافت بعدی: ${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s};
+        const botUsername = "SiemenS_bot"; 
+        let timerInterval = null;
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        function copyAddress() {
+            const addr = document.getElementById('walletAddress').innerText;
+            navigator.clipboard.writeText(addr);
+            if (tg && tg.showAlert) {
+                tg.showAlert('آدرس ولت BEP20 کپی شد!');
             } else {
-                btn.disabled = false;
-                btn.innerText = 'دریافت پاداش';
-                timer.innerText = '';
+                alert('آدرس ولت BEP20 کپی شد!');
             }
         }
 
-        btn.addEventListener('click', function() {
-            const now = Date.now();
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+            el.classList.add('active');
+        }
+
+        let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
+        let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
+
+        function loadData() {
+            document.getElementById('balance').innerText = balance.toFixed(2);
+            document.getElementById('refCount').innerText = '0';
+            document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
+
+            checkTimer();
+        }
+
+        function checkTimer() {
             const COOLDOWN = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            const timePassed = now - lastClaim;
+
+            if (lastClaim > 0 && timePassed < COOLDOWN) {
+                startCountdown(COOLDOWN - timePassed);
+            } else {
+                enableButton();
+            }
+        }
+
+        function startCountdown(remainingMs) {
+            const btn = document.getElementById('claimBtn');
+            btn.disabled = true;
+            btn.innerText = '✅ پاداش امروز دریافت شد';
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                remainingMs -= 1000;
+                if (remainingMs <= 0) {
+                    clearInterval(timerInterval);
+                    enableButton();
+                    return;
+                }
+                const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+                
+                document.getElementById('timer').innerText = 'دریافت بعدی: ' + hours + ':' + (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+            }, 1000);
+        }
+
+        function enableButton() {
+            const btn = document.getElementById('claimBtn');
+            btn.disabled = false;
+            btn.innerText = 'دریافت پاداش';
+            document.getElementById('timer').innerText = '';
+        }
+
+        function claimReward() {
+            const COOLDOWN = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+
             if (now - lastClaim >= COOLDOWN) {
                 balance += 1.0;
                 lastClaim = now;
                 localStorage.setItem('user_balance', balance);
                 localStorage.setItem('last_claim', lastClaim);
-                balanceEl.innerText = balance.toFixed(2);
+                
+                document.getElementById('balance').innerText = balance.toFixed(2);
                 checkTimer();
+                
+                if (tg && tg.showAlert) {
+                    tg.showAlert('۱ USDT با موفقیت به موجودی شما اضافه شد!');
+                }
             }
-        });
+        }
 
-        checkTimer();
-        setInterval(checkTimer, 1000);
+        loadData();
     </script>
 </body>
 </html>
