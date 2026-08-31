@@ -68,7 +68,7 @@
             
             <div style="margin-top: 20px; border-top: 1px solid #2d3361; padding-top: 15px;">
                 <div class="reward-title">✨ Lucky Gift Box</div>
-                <div class="reward-sub">Win a random bonus between 1 to 5 USDT daily!</div>
+                <div class="reward-sub">Requirement: Min 20 USDT deposit (Win 1 to 5 USDT)</div>
                 <button class="btn-claim btn-lucky" id="luckyBtn">Open Lucky Box</button>
                 <div id="luckyTimer" style="margin-top: 6px; font-size: 11px; color: #ab47bc;"></div>
             </div>
@@ -227,7 +227,6 @@
                 }
             });
 
-            // Lucky Gift Box Logic (Random 1 to 5 USDT)
             bindClick('luckyBtn', function() {
                 if (totalDeposited < 20.0) {
                     showModal('depositRequiredModal');
@@ -236,7 +235,6 @@
                 const COOLDOWN = 24 * 60 * 60 * 1000;
                 const now = Date.now();
                 if (now - lastLucky >= COOLDOWN) {
-                    // Random number between 1 and 5 (with 2 decimal places)
                     const randomReward = parseFloat((Math.random() * 4 + 1).toFixed(2));
                     balance += randomReward;
                     lastLucky = now;
@@ -255,7 +253,6 @@
                 const COOLDOWN = 24 * 60 * 60 * 1000;
                 const now = Date.now();
                 
-                // Daily Reward Status
                 const claimBtn = document.getElementById('claimBtn');
                 if (lastClaim > 0 && (now - lastClaim) < COOLDOWN) {
                     claimBtn.disabled = true;
@@ -265,7 +262,6 @@
                     claimBtn.innerText = 'Claim Reward';
                 }
 
-                // Lucky Box Status
                 const luckyBtn = document.getElementById('luckyBtn');
                 const luckyTimer = document.getElementById('luckyTimer');
                 if (lastLucky > 0 && (now - lastLucky) < COOLDOWN) {
@@ -281,7 +277,6 @@
                     luckyTimer.innerText = '';
                 }
 
-                // Withdraw Status
                 const withdrawBtn = document.getElementById('withdrawBtn');
                 const lockNotice = document.getElementById('lockNotice');
                 const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
