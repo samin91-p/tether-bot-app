@@ -4,7 +4,6 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// لینک اتصال اختصاصی دیتابیس MongoDB شما
 const MONGO_URI = 'mongodb+srv://saminjorj_db_user:nVETBguTpDjpj3u5@cluster0.gb7umvk.mongodb.net/tetherbot?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
@@ -13,7 +12,7 @@ mongoose.connect(MONGO_URI)
 
 const userSchema = new mongoose.Schema({
     userId: { type: String, required: true, unique: true },
-    balance: { type: Number, default: 0.00 }
+    balance: { type: Number, default: 0 }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -33,11 +32,11 @@ app.get('/api/user/:id', async (req, res) => {
     try {
         let user = await User.findOne({ userId: req.params.id });
         if (!user) {
-            user = await User.create({ userId: req.params.id, balance: 0.00 });
+            user = await User.create({ userId: req.params.id, balance: 0 });
         }
-        res.json(user);
+        res.json({ balance: Number(user.balance) || 0 });
     } catch (err) {
-        res.status(500).json({ error: 'Database Error' });
+        res.status(500).json({ balance: 0, error: 'Database Error' });
     }
 });
 
@@ -46,13 +45,13 @@ app.post('/api/claim', async (req, res) => {
         const { userId } = req.body;
         let user = await User.findOne({ userId });
         if (!user) {
-            user = await User.create({ userId, balance: 0.00 });
+            user = await User.create({ userId, balance: 0 });
         }
-        user.balance += 1.00;
+        user.balance = (Number(user.balance) || 0) + 1.00;
         await user.save();
         res.json({ success: true, newBalance: user.balance });
     } catch (err) {
-        res.status(500).json({ error: 'Database Error' });
+        res.status(500).json({ success: false, error: 'Database Error' });
     }
 });
 
