@@ -22,6 +22,56 @@ function writeDB(data) {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
+// تابع کمکی برای ساختار پیش‌فرض کاربر
+function getDefaultUserData() {
+    return {
+        balance: 0,
+        totalDeposited: 0,
+        depositTime: 0,
+        lastClaim: 0,
+        lastLucky: 0,
+        lastGame: 0,
+        invitedBy: null,       // کسی که این کاربر را دعوت کرده
+        validReferrals: 0,     // تعداد دوستانی که واریز انجام داده‌اند
+        vouchers: 0,           // تعداد ووچرهای دریافتی از دعوت
+        referredList: []       // لیست آیدی دوستان دعوت شده
+    };
+}
+
+// مسیر گرفتن اطلاعات کاربر (همراه با قابلیت ثبت معرف در صورت ارسال startParam)
+app.post('/api/user', (req, res) => {
+    const { userId, startParam } = req.body;
+    if (!userId) return res.status(400).json({ success: false, message: "User ID missing" });
+
+    const db = readDB();
+    
+    if (!db[userId]) {
+        db[userId] = getDefaultUserData();
+        
+        // اگر کاربر با لینک کسی آمده باشد و معرف خودش نباشد
+        if (startParam && db[startParam] && startParam !== userId) {
+            db[userId].invitedBy = startParam;
+            if (!db[startParam].referredList.includes(userId)) {
+                db[startParam].referredList.push(userId);
+            }
+        }
+        writeDB(db);
+    } else {
+        // چک کردن فیلدهای جدید در صورت آپدیت دیتابیس قدیمی
+        let updated = false;
+        const defaults = getDefaultUserData();
+        for (let key in defaults) {
+            if (db[userId][key] === undefined) {
+                db[userId][key] = defaults[key];
+                updated = true;
+            }
+        }
+        if (updated) writeDB(db);
+    }
+    
+    res.json({ success: true, data: db[userId] });
+});
+
 // مسیر ساخت فاکتور
 app.post('/api/create-invoice', (req, res) => {
     try {
@@ -57,39 +107,16 @@ app.post('/api/verify-payment', (req, res) => {
     }
 });
 
-// گرفتن اطلاعات کاربر
-app.get('/api/user/:userId', (req, res) => {
-    const db = readDB();
-    const userId = req.params.userId;
-    
-    if (!db[userId]) {
-        db[userId] = { 
-            balance: 0, 
-            totalDeposited: 0, 
-            depositTime: 0, 
-            lastClaim: 0, 
-            lastLucky: 0,
-            lastGame: 0
-        };
-        writeDB(db);
-    } else {
-        if (db[userId].lastGame === undefined) {
-            db[userId].lastGame = 0;
-            writeDB(db);
-        }
-    }
-    
-    res.json({ success: true, data: db[userId] });
-});
-
-// مسیر شارژ ادمین
+// شارژ حساب توسط ادمین (و اعمال پاداش خودکار معرف در صورت اولین واریز بالای 20 تتر)
 app.post('/api/admin/charge', (req, res) => {
     const { userId, amount, deposit } = req.body;
     const db = readDB();
     
     if (!db[userId]) {
-        db[userId] = { balance: 0, totalDeposited: 0, depositTime: 0, lastClaim: 0, lastLucky: 0, lastGame: 0 };
+        db[userId] = getDefaultUserData();
     }
+    
+    const wasAlreadyDeposited = db[userId].totalDeposited >= 20;
     
     db[userId].balance += parseFloat(amount || 0);
     if (deposit) {
@@ -97,8 +124,20 @@ app.post('/api/admin/charge', (req, res) => {
         db[userId].depositTime = Date.now();
     }
     
+    // اگر کاربر برای اولین بار واریزش به ۲۰ تتر یا بیشتر رسید و کسی او را دعوت کرده بود
+    if (!wasAlreadyDeposited && db[userId].totalDeposited >= 20 && db[userId].invitedBy) {
+        const referrerId = db[userId].invitedBy;
+        if (db[referrerId]) {
+            // افزایش تعداد دوستان معتبر و ووچر معرف
+            db[referrerId].validReferrals += 1;
+            db[referrerId].vouchers += 1;
+            // همچنین می‌توانیم اختیاری یک جایزه نقدی هم به معرف بدهیم (مثلاً 1 USDT)
+            db[referrerId].balance += 1.0; 
+        }
+    }
+    
     writeDB(db);
-    console.log(`✅ حساب کاربر ${userId} به مبلغ ${amount} شارژ شد.`);
+    console.log(`✅ حساب کاربر ${userId} شارژ شد.`);
     res.json({ success: true, data: db[userId] });
 });
 
