@@ -61,7 +61,7 @@
 
         <div class="card">
             <div class="reward-title">🎁 پاداش روزانه</div>
-            <div class="reward-sub">هر ۲۴ ساعت یک‌بار ۱ USDT دریافت کنید!</div>
+            <div class="reward-sub">شرط دریافت: حداقل ۲۰ USDT واریزی فعال</div>
             <button class="btn-claim" id="claimBtn" onclick="claimReward()">دریافت پاداش</button>
             <div id="timer" style="margin-top: 10px; font-size: 13px; color: #ffb74d;"></div>
         </div>
@@ -82,9 +82,20 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('depositModal')">&times;</span>
             <h3 style="color: #00e676; margin-bottom: 10px;">واریز USDT (BEP20)</h3>
-            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 10px;">آدرس زیر را کپی کرده و روی شبکه BSC واریز کنید:</p>
+            <p style="font-size: 12px; color: #8a92b2; margin-bottom: 10px;">آدرس زیر را کپی کرده و حداقل ۲۰ تتر روی شبکه BSC واریز کنید:</p>
             <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
             <button class="btn-claim" style="margin-top: 15px;" onclick="copyAddress()">کپی آدرس ولت</button>
+            <button class="btn-claim" style="margin-top: 10px; background: #00c853; color: #000;" onclick="simulateDeposit()">تست شارژ ۲۰ تتر</button>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ خطا شرط واریز -->
+    <div id="depositRequiredModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('depositRequiredModal')">&times;</span>
+            <h3 style="color: #ffb74d; margin-bottom: 10px;">⚠️ عدم فعال‌سازی پاداش</h3>
+            <p style="font-size: 13px; color: #8a92b2; margin-bottom: 15px;">برای فعال‌سازی پاداش روزانه، ابتدا باید حداقل <b>۲۰ USDT</b> به حساب خود واریز کنید.</p>
+            <button class="btn-claim" style="background: linear-gradient(135deg, #00c853, #00e676); color: #000;" onclick="closeModal('depositRequiredModal'); openModal('depositModal');">ورود به بخش واریز</button>
         </div>
     </div>
 
@@ -97,7 +108,7 @@
         </div>
     </div>
 
-    <!-- منو (فقط کیف پول و دعوت) -->
+    <!-- منو -->
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('wallet', this)">
             <span class="nav-icon">💎</span>
@@ -148,7 +159,22 @@
         }
 
         let balance = parseFloat(localStorage.getItem('user_balance') || '0.00');
+        let totalDeposited = parseFloat(localStorage.getItem('total_deposited') || '0.00');
         let lastClaim = parseInt(localStorage.getItem('last_claim') || '0');
+
+        function simulateDeposit() {
+            totalDeposited += 20.0;
+            balance += 20.0;
+            localStorage.setItem('total_deposited', totalDeposited);
+            localStorage.setItem('user_balance', balance);
+            document.getElementById('balance').innerText = balance.toFixed(2);
+            closeModal('depositModal');
+            if (tg && tg.showAlert) {
+                tg.showAlert('مبلغ ۲۰ تتر شارژ شد!');
+            } else {
+                alert('مبلغ ۲۰ تتر شارژ شد!');
+            }
+        }
 
         function loadData() {
             document.getElementById('balance').innerText = balance.toFixed(2);
@@ -199,6 +225,11 @@
         }
 
         function claimReward() {
+            if (totalDeposited < 20.0) {
+                openModal('depositRequiredModal');
+                return;
+            }
+
             const COOLDOWN = 24 * 60 * 60 * 1000;
             const now = Date.now();
 
