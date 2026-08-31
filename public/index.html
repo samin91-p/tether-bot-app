@@ -92,7 +92,7 @@
     <div id="tab-invite" class="tab-content">
         <div class="card">
             <div class="reward-title">👥 Invite Friends</div>
-            <div class="reward-sub">Get 1 Gift Voucher when your friend deposits at least 20 USDT</div>
+            <div class="reward-sub">Get 1 Gift Voucher & 1 USDT when your friend deposits at least 20 USDT</div>
             <div style="margin: 10px 0; font-size: 14px;">Valid Referrals: <b id="refCount" style="color: #00e676;">0</b></div>
             <div style="margin: 10px 0; font-size: 14px;">Gift Vouchers: <b id="voucherCount" style="color: #ab47bc;">0</b></div>
             <div class="ref-box" id="refLink">Loading referral link...</div>
@@ -151,16 +151,30 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-            let userId = '6559439220';
+            // خواندن آیدی کاربر و پارامتر معرف (startParam) از لینک تلگرام
+            const urlParams = new URLSearchParams(window.location.search);
+            let userId = '6559439220'; // مقدار تست پیش‌فرض
+            
+            // اگر از طرف تلگرام مینی اپ باز شود، آیدی واقعی از وب اپلیکیشن تلگرام خوانده می‌شود
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                userId = String(window.Telegram.WebApp.initDataUnsafe.user.id);
+            }
+
+            // خواندن معرف از طریق لینک (مثل ?start=123456)
+            let startParam = urlParams.get('start');
             const botUsername = "SiemenS_bot"; 
 
-            let userData = { balance: 0, totalDeposited: 0, depositTime: Date.now(), lastClaim: 0, lastLucky: 0, lastGame: 0 };
+            let userData = { balance: 0, totalDeposited: 0, depositTime: Date.now(), lastClaim: 0, lastLucky: 0, lastGame: 0, validReferrals: 0, vouchers: 0 };
             let currentDepositAddress = "";
             let currentDepositAmount = "";
 
             async function fetchUserData() {
                 try {
-                    const res = await fetch(`/api/user/${userId}`);
+                    const res = await fetch('/api/user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, startParam: startParam })
+                    });
                     const json = await res.json();
                     if (json.success) {
                         userData = json.data;
@@ -365,6 +379,10 @@
             function render() {
                 document.getElementById('balance').innerText = parseFloat(userData.balance).toFixed(2);
                 document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
+                
+                // بروزرسانی آمار ارجاع در تب Invite
+                document.getElementById('refCount').innerText = userData.validReferrals || 0;
+                document.getElementById('voucherCount').innerText = userData.vouchers || 0;
 
                 const now = Date.now();
                 const COOLDOWN = 24 * 60 * 60 * 1000;
