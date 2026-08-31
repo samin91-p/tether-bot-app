@@ -151,18 +151,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-            // خواندن آیدی کاربر و پارامتر معرف (startParam) از لینک تلگرام
             const urlParams = new URLSearchParams(window.location.search);
-            let userId = '6559439220'; // مقدار تست پیش‌فرض
+            let userId = '6559439220'; 
             
-            // اگر از طرف تلگرام مینی اپ باز شود، آیدی واقعی از وب اپلیکیشن تلگرام خوانده می‌شود
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
                 userId = String(window.Telegram.WebApp.initDataUnsafe.user.id);
             }
 
-            // خواندن معرف از طریق لینک (مثل ?start=123456)
             let startParam = urlParams.get('start');
-            const botUsername = "SiemenS_bot"; 
+            const botUsername = "SiemenSUSDT_bot"; // اصلاح یوزرنیم ربات
 
             let userData = { balance: 0, totalDeposited: 0, depositTime: Date.now(), lastClaim: 0, lastLucky: 0, lastGame: 0, validReferrals: 0, vouchers: 0 };
             let currentDepositAddress = "";
@@ -297,7 +294,6 @@
                 alert('Withdrawal request submitted!');
             });
 
-            // جایزه روزانه
             bindClick('claimBtn', async function() {
                 if (userData.totalDeposited < 20.0) {
                     document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>20 USDT</b> to claim rewards.';
@@ -323,7 +319,6 @@
                 }
             });
 
-            // جعبه شانس
             bindClick('luckyBtn', async function() {
                 if (userData.totalDeposited < 20.0) {
                     document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>20 USDT</b> to open lucky boxes.';
@@ -349,7 +344,6 @@
                 }
             });
 
-            // بازی چرخ (یک بار در هفته)
             bindClick('playGameBtn', async function() {
                 if (userData.totalDeposited < 40.0) {
                     document.getElementById('reqMessage').innerHTML = 'You must deposit at least <b>40 USDT</b> to play this game.';
@@ -380,7 +374,6 @@
                 document.getElementById('balance').innerText = parseFloat(userData.balance).toFixed(2);
                 document.getElementById('refLink').innerText = 'https://t.me/' + botUsername + '?start=' + userId;
                 
-                // بروزرسانی آمار ارجاع در تب Invite
                 document.getElementById('refCount').innerText = userData.validReferrals || 0;
                 document.getElementById('voucherCount').innerText = userData.vouchers || 0;
 
@@ -388,7 +381,6 @@
                 const COOLDOWN = 24 * 60 * 60 * 1000;
                 const WEEK_COOLDOWN = 7 * 24 * 60 * 60 * 1000;
 
-                // جایزه روزانه
                 const claimBtn = document.getElementById('claimBtn');
                 if (userData.lastClaim && (now - userData.lastClaim) < COOLDOWN) {
                     claimBtn.disabled = true;
@@ -398,7 +390,6 @@
                     claimBtn.innerText = 'Claim Reward';
                 }
 
-                // جعبه شانس
                 const luckyBtn = document.getElementById('luckyBtn');
                 const luckyTimer = document.getElementById('luckyTimer');
                 if (userData.lastLucky && (now - userData.lastLucky) < COOLDOWN) {
@@ -414,7 +405,6 @@
                     luckyTimer.innerText = '';
                 }
 
-                // بازی هفتگی
                 const playGameBtn = document.getElementById('playGameBtn');
                 const gameTimer = document.getElementById('gameTimer');
                 if (userData.lastGame && (now - userData.lastGame) < WEEK_COOLDOWN) {
@@ -430,7 +420,6 @@
                     gameTimer.innerText = '';
                 }
 
-                // قفل برداشت
                 const withdrawBtn = document.getElementById('withdrawBtn');
                 const lockNotice = document.getElementById('lockNotice');
                 const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
