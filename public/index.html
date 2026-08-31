@@ -34,7 +34,12 @@
         .tab-content { display: none; width: 100%; max-width: 380px; }
         .tab-content.active { display: block; }
 
-        .ref-box { background: #0b0c1e; padding: 12px; border-radius: 10px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 10px; }
+        .ref-box { background: #0b0c1e; padding: 12px; border-radius: 10px; font-size: 11px; color: #64b5f6; word-break: break-all; margin-top: 10px; user-select: all; }
+
+        /* پنجره پاپ‌آپ واریز و برداشت */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #181b3a; border-radius: 20px; padding: 25px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #2d3361; position: relative; }
+        .close-btn { position: absolute; top: 10px; left: 15px; font-size: 20px; cursor: pointer; color: #8a92b2; }
     </style>
 </head>
 <body>
@@ -47,8 +52,8 @@
         </div>
 
         <div class="action-btns">
-            <button class="btn-action btn-withdraw">🔒 برداشت (5 روز مانده)</button>
-            <button class="btn-action btn-deposit">📩 واریز</button>
+            <button class="btn-action btn-withdraw" onclick="openModal('withdrawModal')">🔒 برداشت (5 روز مانده)</button>
+            <button class="btn-action btn-deposit" onclick="openModal('depositModal')">📩 واریز</button>
         </div>
 
         <div class="alert-box">
@@ -89,6 +94,26 @@
         </div>
     </div>
 
+    <!-- پاپ‌آپ واریز -->
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('depositModal')">&times;</span>
+            <h3 style="color: #00e676;">واریز USDT (BEP20)</h3>
+            <p style="font-size: 12px; color: #8a92b2;">آدرس زیر را کپی کرده و روی شبکه BSC واریز کنید:</p>
+            <div class="ref-box" id="walletAddress">0xDae2e4e81A39C4E68faFAFd8b6aa05192f7A123</div>
+            <button class="btn-claim" style="margin-top: 15px;" onclick="copyAddress()">کپی آدرس ولت</button>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ برداشت -->
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('withdrawModal')">&times;</span>
+            <h3 style="color: #ffb74d;">بخش برداشت</h3>
+            <p style="font-size: 13px; color: #8a92b2;">امکان برداشت در حال حاضر قفل است.<br>لطفاً تا پایان زمان قفل ۵ روزه صبر کنید.</p>
+        </div>
+    </div>
+
     <!-- منو -->
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('wallet', this)">
@@ -120,6 +145,14 @@
         const startParam = tg?.initDataUnsafe?.start_param || '';
 
         let timerInterval = null;
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function copyAddress() {
+            const addr = document.getElementById('walletAddress').innerText;
+            navigator.clipboard.writeText(addr);
+            alert('آدرس ولت BEP20 کپی شد!');
+        }
 
         function switchTab(tabName, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
