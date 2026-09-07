@@ -7,10 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// چون فایل‌های HTML و فرانت‌اندت داخل پوشه public هستند
+// سرو کردن فایل‌های استاتیک پوشه public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// مسیر فایل دیتابیس برای اینکه موجودی‌ها صفر نشوند
+// مسیر فایل دیتابیس برای جلوگیری از صفر شدن موجودی‌ها
 const DB_FILE = path.join(__dirname, 'database.json');
 
 function readDatabase() {
@@ -54,6 +54,16 @@ balance: db[userId].balance,
 totalDeposited: db[userId].totalDeposited,
 refCount: db[userId].refCount,
 voucherCount: db[userId].voucherCount
+});
+});
+
+// API بخش واریز با آدرس ولت دقیق شما و متون انگلیسی
+app.get('/api/deposit', (req, res) => {
+res.json({
+status: 'success',
+address: '0xDdaE2e4e81A39C4E68faFAF1d8b6aa05192f7A123',
+network: 'BEP20 (USDT)',
+buttonText: 'I Have Paid / Check Deposit'
 });
 });
 
