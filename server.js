@@ -57,15 +57,16 @@ voucherCount: db[userId].voucherCount
 });
 });
 
-// API بخش واریز با آدرس ولت دقیق شما و متون انگلیسی
-app.get('/api/deposit', (req, res) => {
-res.json({
+// پوشش دادن تمام مسیرهای احتمالی که فرانت‌اند برای واریز صدا می‌زند
+const walletData = {
 status: 'success',
 address: '0xDdaE2e4e81A39C4E68faFAF1d8b6aa05192f7A123',
-network: 'BEP20 (USDT)',
-buttonText: 'I Have Paid / Check Deposit'
-});
-});
+network: 'BEP20 (USDT)'
+};
+
+app.get('/api/deposit', (req, res) => res.json(walletData));
+app.get('/api/wallet', (req, res) => res.json(walletData));
+app.get('/api/get-address', (req, res) => res.json(walletData));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
