@@ -7,10 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// سرو کردن خودکار فایل‌های فرانت‌اند و index.html
-app.use(express.static(path.join(__dirname)));
+// چون فایل‌های HTML و فرانت‌اندت داخل پوشه public هستند
+app.use(express.static(path.join(__dirname, 'public')));
 
-// مسیر فایل پایگاه داده برای جلوگیری از صفر شدن موجودی‌ها
+// مسیر فایل دیتابیس برای اینکه موجودی‌ها صفر نشوند
 const DB_FILE = path.join(__dirname, 'database.json');
 
 function readDatabase() {
@@ -33,7 +33,7 @@ function saveDatabase(data) {
 fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// API دریافت اطلاعات و موجودی کاربر
+// API دریافت موجودی و اطلاعات کاربر
 app.get('/api/user', (req, res) => {
 const userId = req.query.userId || '6559439220';
 const db = readDatabase();
