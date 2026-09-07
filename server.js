@@ -7,7 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// مسیر فایل پایگاه داده برای اینکه اطلاعات کاربران با ریستارت شدن یا خوابیدن سرور پاک نشود
+// سرو کردن خودکار فایل‌های فرانت‌اند و index.html
+app.use(express.static(path.join(__dirname)));
+
+// مسیر فایل پایگاه داده برای جلوگیری از صفر شدن موجودی‌ها
 const DB_FILE = path.join(__dirname, 'database.json');
 
 function readDatabase() {
@@ -30,10 +33,7 @@ function saveDatabase(data) {
 fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// سرو کردن فایل‌های استاتیک فرانت‌اند (مثل عکس‌ها، استایل‌ها و اسکریپت‌ها)
-app.use(express.static(path.join(__dirname)));
-
-// API دریافت اطلاعات کاربر و موجودی
+// API دریافت اطلاعات و موجودی کاربر
 app.get('/api/user', (req, res) => {
 const userId = req.query.userId || '6559439220';
 const db = readDatabase();
@@ -55,16 +55,6 @@ totalDeposited: db[userId].totalDeposited,
 refCount: db[userId].refCount,
 voucherCount: db[userId].voucherCount
 });
-});
-
-// باز شدن صفحه اصلی مینی‌اپ با آدرس ریشه
-app.get('/', (req, res) => {
-const indexPath = path.join(__dirname, 'app.html');
-if (fs.existsSync(indexPath)) {
-res.sendFile(indexPath);
-} else {
-res.sendFile(path.join(__dirname, 'index.html'));
-}
 });
 
 const PORT = process.env.PORT || 3000;
