@@ -7,61 +7,61 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// سرو کردن فایل‌های استاتیک پوشه public
+// سرو کردن فایل‌های استاتیک فرانت‌اند (پوشه public)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// مسیر فایل دیتابیس برای جلوگیری از صفر شدن موجودی‌ها
+// مسیر پایگاه داده محلی
 const DB_FILE = path.join(__dirname, 'database.json');
 
 function readDatabase() {
-if (!fs.existsSync(DB_FILE)) {
-const defaultData = {
-"6559439220": { balance: 62.20, totalDeposited: 20.00, refCount: 0, voucherCount: 0 }
-};
-fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2));
-return defaultData;
-}
-try {
-const data = fs.readFileSync(DB_FILE, 'utf8');
-return JSON.parse(data);
-} catch (err) {
-return {};
-}
+    if (!fs.existsSync(DB_FILE)) {
+        const defaultData = {
+            "6559439220": { balance: 62.20, totalDeposited: 20.00, refCount: 0, voucherCount: 0 }
+        };
+        fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2));
+        return defaultData;
+    }
+    try {
+        const data = fs.readFileSync(DB_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        return {};
+    }
 }
 
 function saveDatabase(data) {
-fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// API دریافت موجودی و اطلاعات کاربر
+// API دریافت موجودی کاربر برای مینی‌اپ
 app.get('/api/user', (req, res) => {
-const userId = req.query.userId || '6559439220';
-const db = readDatabase();
+    const userId = req.query.userId || '6559439220';
+    const db = readDatabase();
 
-if (!db[userId]) {
-db[userId] = {
-balance: 0.00,
-totalDeposited: 0.00,
-refCount: 0,
-voucherCount: 0
-};
-saveDatabase(db);
-}
+    if (!db[userId]) {
+        db[userId] = {
+            balance: 0.00,
+            totalDeposited: 0.00,
+            refCount: 0,
+            voucherCount: 0
+        };
+        saveDatabase(db);
+    }
 
-res.json({
-userId: userId,
-balance: db[userId].balance,
-totalDeposited: db[userId].totalDeposited,
-refCount: db[userId].refCount,
-voucherCount: db[userId].voucherCount
+    res.json({
+        userId: userId,
+        balance: db[userId].balance,
+        totalDeposited: db[userId].totalDeposited,
+        refCount: db[userId].refCount,
+        voucherCount: db[userId].voucherCount
+    });
 });
-});
 
-// پوشش دادن تمام مسیرهای احتمالی که فرانت‌اند برای واریز صدا می‌زند
+// پاسخ به درخواست‌های واریز فرانت‌اند جهت رفع ارور Connection Error
 const walletData = {
-status: 'success',
-address: '0xDdaE2e4e81A39C4E68faFAF1d8b6aa05192f7A123',
-network: 'BEP20 (USDT)'
+    status: 'success',
+    address: '0xDdAE2e4e81A39C4E68faFAFd8b6aa05192f7A123',
+    network: 'BEP20 (USDT)'
 };
 
 app.get('/api/deposit', (req, res) => res.json(walletData));
@@ -70,5 +70,5 @@ app.get('/api/get-address', (req, res) => res.json(walletData));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-console.log('Server is running on port ' + PORT);
+    console.log('Server is running on port ' + PORT);
 });
