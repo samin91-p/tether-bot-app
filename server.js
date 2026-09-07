@@ -1,74 +1,31 @@
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+message.chat.id;
+  const data = query.data;
 
-const app = express();
-app.use(express.json());
-app.use(cors());
+  if (data === 'deposit') {
+    const text = 💳 *Deposit USDT (BEP-20)*\n\nSend your deposit to the following BEP-20 address:\n\n\`${MY_WALLET_ADDRESS}\`\n\n_Note: Minimum deposit is 20 USDT._;
+    bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+  }
 
-// سرو کردن فایل‌های استاتیک فرانت‌اند (پوشه public)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// مسیر پایگاه داده محلی
-const DB_FILE = path.join(__dirname, 'database.json');
-
-function readDatabase() {
-    if (!fs.existsSync(DB_FILE)) {
-        const defaultData = {
-            "6559439220": { balance: 62.20, totalDeposited: 20.00, refCount: 0, voucherCount: 0 }
-        };
-        fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2));
-        return defaultData;
-    }
-    try {
-        const data = fs.readFileSync(DB_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        return {};
-    }
-}
-
-function saveDatabase(data) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-}
-
-// API دریافت موجودی کاربر برای مینی‌اپ
-app.get('/api/user', (req, res) => {
-    const userId = req.query.userId || '6559439220';
-    const db = readDatabase();
-
-    if (!db[userId]) {
-        db[userId] = {
-            balance: 0.00,
-            totalDeposited: 0.00,
-            refCount: 0,
-            voucherCount: 0
-        };
-        saveDatabase(db);
-    }
-
-    res.json({
-        userId: userId,
-        balance: db[userId].balance,
-        totalDeposited: db[userId].totalDeposited,
-        refCount: db[userId].refCount,
-        voucherCount: db[userId].voucherCount
+  if (data === 'dashboard') {
+    db.get('SELECT total_deposit, balance FROM users WHERE id = ?', [chatId], (err, user) => {
+      if (user) {
+        const dailyProfit = Math.floor(user.total_deposit / 20) * 1;
+        const text = 📊 *User Dashboard*\n\n💰 Total Deposit: *${user.total_deposit} USDT*\n📈 Daily Profit: *${dailyProfit} USDT/day*\n💵 Available Balance: *${user.balance} USDT*;
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      }
     });
+  }
+
+  if (data === 'referral') {
+    bot.getMe().then((botInfo) => {
+      const refLink = https://t.me/${botInfo.username}?start=${chatId};
+      bot.sendMessage(chatId, 👥 *Your Referral Link:*\n\n\`${refLink}\`, { parse_mode: 'Markdown' });
+    });
+  }
 });
 
-// پاسخ به درخواست‌های واریز فرانت‌اند جهت رفع ارور Connection Error
-const walletData = {
-    status: 'success',
-    address: '0xDdAE2e4e81A39C4E68faFAFd8b6aa05192f7A123',
-    network: 'BEP20 (USDT)'
-};
-
-app.get('/api/deposit', (req, res) => res.json(walletData));
-app.get('/api/wallet', (req, res) => res.json(walletData));
-app.get('/api/get-address', (req, res) => res.json(walletData));
-
+// اجرای سرور روی پورت رندر
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log('Server is running on port ' + PORT);
+    console.log('Server and Bot are running on port ' + PORT);
 });
