@@ -50,7 +50,7 @@ transition: transform 0.1s;
 .btn:active { transform: scale(0.98); }
 .btn-primary { background-color: var(--accent-color); color: #000; }
 .btn-secondary { background-color: var(--card-bg); color: var(--text-color); border: 1px solid rgba(255,255,255,0.1); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .user-info { font-size: 15px; color: var(--subtext-color); margin-bottom: 15px; font-weight: 500; }
 
 .tab-content { display: none; width: 100%; max-width: 350px; }
@@ -122,13 +122,14 @@ margin-bottom: 12px;
 .input-field {
 width: 100%;
 padding: 10px;
-margin: 10px 0;
+margin: 8px 0;
 background: #0f172a;
 border: 1px solid rgba(255,255,255,0.2);
 border-radius: 8px;
 color: #fff;
 box-sizing: border-box;
 text-align: center;
+font-size: 13px;
 }
 </style>
 </head>
@@ -151,7 +152,7 @@ text-align: center;
 <div class="card">
 <h3>🎁 پاداش روزانه</h3>
 <div class="notice-box" id="dailyNotice">
-🔒 پاداش روزانه فقط برای حساب‌هایی که حداقل <b>۲۰ تتر</b> واریزی دارند فعال است (یک بار در روز).
+🔒 پاداش روزانه فقط برای حساب‌هایی که حداقل <b>۲۰ تتر</b> واریزی دارند فعال است.
 </div>
 <button class="btn btn-primary" id="dailyBtn" style="width: 100%;" onclick="claimDaily()">دریافت پاداش امروز</button>
 </div>
@@ -210,9 +211,10 @@ text-align: center;
 <div class="modal" id="withdrawModal">
 <div class="modal-content">
 <h3>💸 برداشت وجه</h3>
-<p style="font-size: 12px; color: var(--subtext-color); margin-top: 5px;" id="withdrawLimitInfo">حداکثر قابل برداشت: 0 USDT</p>
+<p style="font-size: 12px; color: var(--subtext-color); margin-top: 5px;" id="withdrawLimitInfo">حداکثر سقف مجاز برداشت کل: 0 USDT</p>
 <input type="number" id="withdrawAmount" class="input-field" placeholder="مقدار برداشت (USDT)">
-<button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="submitWithdraw()">تایید و برداشت</button>
+<input type="text" id="userWallet" class="input-field" placeholder="آدرس کیف پول شما (BEP20)">
+<button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="submitWithdraw()">تایید و ثبت برداشت</button>
 <button class="btn btn-secondary" style="width: 100%;" onclick="closeModal('withdrawModal')">انصراف</button>
 </div>
 </div>
@@ -253,7 +255,7 @@ dailyBtn.setAttribute('disabled', 'true');
 dailyNotice.innerText = '🔒 پاداش روزانه برای حساب‌های با حداقل ۲۰ تتر واریزی فعال است.';
 } else if (data.alreadyClaimedToday) {
 dailyBtn.setAttribute('disabled', 'true');
-dailyNotice.innerText = '✅ پاداش امروز خود را دریافت کرده‌اید. فردا دوباره مراجعه کنید.';
+dailyNotice.innerText = '✅ پاداش امروز دریافت شده است. فردا مراجعه کنید.';
 } else {
 dailyBtn.removeAttribute('disabled');
 dailyNotice.innerText = '🎁 پاداش روزانه شما آماده دریافت است!';
@@ -273,7 +275,7 @@ body: JSON.stringify({ userId })
 .then(res => res.json())
 .then(data => {
 if (data.success) {
-alert('🎉 ۱ تتر پاداش روزانه با موفقیت به حساب شما اضافه شد!');
+alert('🎉 ۱ تتر پاداش روزانه با موفقیت اضافه شد!');
 loadUserData();
 } else {
 alert('⚠️ ' + data.message);
@@ -283,31 +285,38 @@ alert('⚠️ ' + data.message);
 
 function openWithdrawModal() {
 if (!userDataGlobal.canWithdraw) {
-alert('⚠️ برای فعال شدن برداشت باید حداقل ۲۰ تتر واریز کرده باشید.');
+alert('⚠️ برای برداشت باید حداقل ۲۰ تتر واریز کرده باشید و سقف برداشت شما پر نشده باشد.');
 return;
 }
-const maxW = userDataGlobal.maxWithdraw || 0;
-document.getElementById('withdrawLimitInfo').innerText = `حداکثر قابل برداشت (۵۰٪ واریزی): ${maxW.toFixed(2)} USDT`;
+const maxLimit = userDataGlobal.maxWithdrawLimit || 0;
+document.getElementById('withdrawLimitInfo').innerText = `حداکثر سقف قابل برداشت باقی‌مانده: ${maxLimit.toFixed(2)} USDT`;
 document.getElementById('withdrawAmount').value = '';
+document.getElementById('userWallet').value = '';
 document.getElementById('withdrawModal').style.display = 'flex';
 }
 
 function submitWithdraw() {
 const amount = parseFloat(document.getElementById('withdrawAmount').value);
+const userWallet = document.getElementById('userWallet').value.trim();
+
 if (!amount || amount <= 0) {
-alert('لطفاً مقدار معتبری وارد کنید.');
+alert('لطفاً مقدار معتبری برای برداشت وارد کنید.');
+return;
+}
+if (!userWallet || userWallet.length < 10) {
+alert('لطفاً آدرس کیف پول معتبر خود را وارد کنید.');
 return;
 }
 
 fetch('/api/withdraw', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ userId, amount })
+body: JSON.stringify({ userId, amount, userWallet })
 })
 .then(res => res.json())
 .then(data => {
 if (data.success) {
-alert(`✅ برداشت مبلغ ${amount} تتر با موفقیت ثبت شد!`);
+alert(`✅ درخواست برداشت مبلغ ${amount} تتر با موفقیت ثبت شد و به آدرس شما واریز خواهد شد!`);
 closeModal('withdrawModal');
 loadUserData();
 } else {
